@@ -23,7 +23,6 @@ import salami_slice_analyze
 import chart
 import time
 from fractions import Fraction
-from decimal import Decimal
 import os
 
 

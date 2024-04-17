@@ -23,8 +23,6 @@ import salami_slice_analyze
 import staff_analyze
 import chart
 import time
-from fractions import Fraction
-from decimal import Decimal
 
 
 def c_analyze():
