@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import numpy
+import numpy as np
 from decimal import Decimal
 
 
@@ -58,9 +58,9 @@ class Results:
         self._pitch_duration_voices = None
         self._pitch_frequency = None
         self._pitch_frequency_voices = None
-        self._pitch_highest = -numpy.inf
+        self._pitch_highest = -np.inf
         self._pitch_highest_voices = None
-        self._pitch_lowest = numpy.inf
+        self._pitch_lowest = np.inf
         self._pitch_lowest_voices = None
         self._pset_card_avg = 0
         self._pset_duration = None
@@ -531,8 +531,8 @@ class Results:
             self._pitch_duration_voices = [{} for v in range(self._num_voices)]
             self._pitch_frequency = {}  # The total number of distinct (nonadjacent) occurrences of this pitch
             self._pitch_frequency_voices = [{} for v in range(self._num_voices)]
-            self._pitch_highest_voices = [-numpy.inf for v in range(self._num_voices)]
-            self._pitch_lowest_voices = [numpy.inf for v in range(self._num_voices)]
+            self._pitch_highest_voices = [-np.inf for v in range(self._num_voices)]
+            self._pitch_lowest_voices = [np.inf for v in range(self._num_voices)]
             self._pset_duration = {}
             self._pset_frequency = {}
             self._pcsc_duration = {}
@@ -549,7 +549,7 @@ class Results:
                 self._quarter_duration += s.quarter_duration
                 if s.p_cardinality > 0:
                     self._pset_card_avg += len(s.pset) * s.duration
-                    if s.chord_spacing_index is not numpy.nan:
+                    if s.chord_spacing_index is not np.nan:
                         self._chord_spacing_index_avg += Decimal(s.chord_spacing_index) * s.duration
                         valid_durations_for_spacing += s.duration
                     self._ps_avg += s.ps
