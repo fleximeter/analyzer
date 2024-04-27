@@ -24,14 +24,15 @@ import music21
 import pandas as pd
 
 
-def part_ioi_calculator(score):
+def part_ioi_calculator(score, tempo_list=None):
     """
     Parses a score and gets the individual note, rest, and chord items. Requires that each staff
     not have separate Voice objects.
     :param score: The score to parse
     :return: A list of staves with note, rest, and chord objects and associated IOI information
     """
-    tempo_list = []
+    if tempo_list is None:
+        tempo_list_from_score = []
     stream_collection = []
     staff_collection = []
 
@@ -44,23 +45,28 @@ def part_ioi_calculator(score):
             stream_collection.append([])
             for j, measure in enumerate(staff):                
                 if type(measure) == music21.stream.Measure:
-                    for k, item in enumerate(measure):
+                    for current_note, item in enumerate(measure):
                         if type(item) == music21.note.Note or type(item) == music21.note.Rest or type(item) == music21.chord.Chord:
                             stream_collection[staff_idx].append(item)
                         elif type(item) == music21.tempo.MetronomeMark:
-                            tempo_list.append((measure.number, item))
+                            tempo_list_from_score.append((measure.number, item))
             staff_idx += 1
     
-    if len(tempo_list) == 0:
-        tempo_list.append((0, music21.tempo.MetronomeMark(number=60, referent=1)))
+    # What if no tempo is provided?
+    if tempo_list is None and len(tempo_list_from_score) == 0:
+        tempo_list_from_score.append((0, music21.tempo.MetronomeMark(number=60, referent=1)))
+    if tempo_list is not None:
+        tempo_list_from_score = [(tempo, music21.tempo.MetronomeMark(number=tempo_list[tempo], referent=1)) for tempo in tempo_list]
 
     # Get a better representation of the staves, combining notes that belong together, and assigning duration in seconds
     for i, staff in enumerate(stream_collection):
         staff_collection.append([])
         currentTempoIdx = 0
         for j, item in enumerate(staff):
+            start_time = 0
+
             # Update the current tempo if necessary
-            if len(tempo_list) > currentTempoIdx + 1 and item.measureNumber >= tempo_list[currentTempoIdx + 1][0]:
+            if len(tempo_list_from_score) > currentTempoIdx + 1 and item.measureNumber >= tempo_list_from_score[currentTempoIdx + 1][0]:
                 currentTempoIdx += 1
 
             # A simplified representation of the note, with additional information
@@ -68,9 +74,12 @@ def part_ioi_calculator(score):
                 "measureNumber": item.measureNumber,
                 "quarterLength": item.duration.quarterLength,
                 "isRest": True if type(item) == music21.note.Rest else False,
-                "duration": tempo_list[currentTempoIdx][1].durationToSeconds(item.duration),
-                "pitches": item.pitches
+                "duration": tempo_list_from_score[currentTempoIdx][1].durationToSeconds(item.duration),
+                "pitches": item.pitches,
+                "startTime": start_time
             }
+
+            start_time += note["duration"]
 
             # Continue a tie if necessary; otherwise just add the note
             if item.tie is not None and item.tie.type in ["continue", "stop"]:
@@ -90,16 +99,21 @@ def part_ioi_calculator(score):
                 staff_collection[i].append(note)
         
         # Calculate IOI
-        k = None # the note we're calculating IOI for
-        ioi = 0
+        current_note = None # the note we're calculating IOI for
+        current_ioi = 0
         for j, item in enumerate(staff_collection[i]):
-            if item["isRest"] and k:
-                ioi += item["duration"]
-            elif not item["isRest"]:
-                if k is not None:
-                    staff_collection[i][k]["ioi"] = ioi
-                k = j
-                ioi = item["duration"]
+            if item["isRest"]:
+                current_ioi += item["duration"]
+            else:
+                # update ioi
+                if current_note is not None:
+                    current_note["ioi"] = current_ioi
+                # reset current note
+                current_note = item
+                current_ioi = item["duration"]
+        # catch the last note
+        if current_note is not None:
+            current_note["ioi"] = current_ioi        
     
     return staff_collection
 

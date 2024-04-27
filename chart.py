@@ -60,7 +60,8 @@ def chart_cardinality(results, x_axis_time=False, title="Cardinality Chart", siz
     matplotlib.pyplot.rc("ytick.major", width=0.5)
     ax = fig.add_subplot(111)
     ax.step(x, ps_s, color="#555555", linewidth=0.3, markersize=1)
-    # matplotlib.pyplot.title(title, fontsize=18)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:
@@ -111,12 +112,71 @@ def chart_chord_spacing_index(results, x_axis_time=False, title="Chord Spacing I
     matplotlib.pyplot.rc("ytick.major", width=0.5)
     ax = fig.add_subplot(111)
     ax.step(x, ps_s, color="#555555", linewidth=0.3, markersize=1)
-    # matplotlib.pyplot.title(title, fontsize=18)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:
         matplotlib.pyplot.xlabel("Measure No.")
     matplotlib.pyplot.ylabel("Chord Spacing Index")
+    matplotlib.pyplot.tight_layout()
+    if path is None:
+        matplotlib.pyplot.show()
+    else:
+        matplotlib.pyplot.savefig(path)
+        matplotlib.pyplot.close()
+
+
+def chart_voice_ioi(ioi_analysis, voice_names=None, colors=None, title="IOI Chart", size=(8, 6), path=None):
+    """
+    Makes a step plot of IOI per voice
+    :param ioi_analysis: An IOI analysis
+    :param voice_names: The voice names to use
+    :param colors: The colors to use for the voices
+    :param title: The title of the plot
+    :param size: The size of the plot
+    :param path: A path to save the chart
+    :return: None
+    """
+    matplotlib.pyplot.clf()
+    matplotlib.pyplot.rcParams["font.family"] = "Academico"
+    fig = matplotlib.pyplot.figure(figsize=size, dpi=600)
+    matplotlib.pyplot.rc("font", size=8)
+    matplotlib.pyplot.rc("axes", titlesize=8)
+    matplotlib.pyplot.rc("axes", labelsize=8)
+    matplotlib.pyplot.rc("axes", linewidth=0.5)
+    matplotlib.pyplot.rc("xtick", labelsize=8)
+    matplotlib.pyplot.rc("xtick.major", width=0.5)
+    matplotlib.pyplot.rc("ytick", labelsize=8)
+    matplotlib.pyplot.rc("ytick.major", width=0.5)
+    ax = fig.add_subplot(111)
+
+    for i, voice in enumerate(ioi_analysis):
+        ioi = []
+        x = []
+        if len(voice) > 0:
+            position_time = voice[0]["startTime"]
+        for note in voice:
+            if note["isRest"]:
+                position_time += note["duration"]
+            else:
+                x.append(position_time / 60)
+                position_time += note["duration"]
+                ioi.append(note["ioi"])
+        if voice_names is not None:
+            label = voice_names[i]
+        else:
+            label = f"Voice {i+1}"
+        if colors is not None:
+            ax.step(x, ioi, linewidth=1, markersize=1, label=label, color=colors[i])
+        else:
+            ax.step(x, ioi, linewidth=1, markersize=1, label=label)
+
+    ax.legend()
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
+    matplotlib.pyplot.xlabel("Time (minutes)")
+    matplotlib.pyplot.ylabel("IOI (sec.)")
     matplotlib.pyplot.tight_layout()
     if path is None:
         matplotlib.pyplot.show()
@@ -196,7 +256,8 @@ def chart_pitch_onset(results, x_axis_time=False, title="Pitch Onset Graph", siz
             ytick_tick.append(i)
             ytick_labels.append(f"C{i // 12 + 4}/{i}")
     matplotlib.pyplot.yticks(ytick_tick, ytick_labels)
-    # matplotlib.pyplot.title(title, fontsize=18)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:
@@ -245,7 +306,8 @@ def chart_pitch_duration(results, title="Pitch Duration Graph", size=(8, 6), pat
             xtick_tick.append(i)
             xtick_labels.append(f"C{i // 12 + 4}/{i}")
     matplotlib.pyplot.xticks(xtick_tick, xtick_labels)
-    matplotlib.pyplot.title(title, fontsize=18)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
     matplotlib.pyplot.xlabel("Pitch")
     matplotlib.pyplot.ylabel("Duration (seconds)")
 
@@ -300,7 +362,8 @@ def chart_pc_duration(results, title="Pitch-Class Duration Graph", size=(8, 6), 
         "B\n11"
     ]
     matplotlib.pyplot.xticks(xtick_tick, xtick_labels)
-    matplotlib.pyplot.title(title, fontsize=18)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=18)
     matplotlib.pyplot.xlabel("Pitch-Class")
     matplotlib.pyplot.ylabel("Duration (seconds)")
 
