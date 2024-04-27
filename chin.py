@@ -115,9 +115,9 @@ def make_charts_general(results, path):
                                    (6.5, 3), os.path.join(path, "chord_spacing_index_t"))
     chart.chart_pitch_onset(results, True, "Pitch Onsets in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             os.path.join(path, "onset_time"))
-    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
+    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6, 3.5),
                                os.path.join(path, "pitch_duration"))
-    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
+    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6, 3.5),
                             os.path.join(path, "pc_duration"))
                             
 
