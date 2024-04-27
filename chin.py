@@ -73,7 +73,7 @@ def c_analyze():
         make_charts_specific(result[0], f"{path}analysis\\graphs_staff{i+1}")
     
     # Perform IOI analysis
-    ioi_analysis = staff_analyze.parser(xml)
+    ioi_analysis = staff_analyze.part_ioi_calculator(xml)
     staff_analyze.write_analysis_to_file(f"{path}\\analysis\\ioi.xlsx", ioi_analysis)
     
     # Print elapsed time

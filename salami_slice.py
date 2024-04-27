@@ -57,41 +57,46 @@ class SalamiSlice:
         self._chord_spacing_index = 0           # The spread measure of the chord
         self._derived_core = False              # Whether or not the chord is a derived core harmony
         self._derived_core_associations = None  # Derived core associations, if any
-        self._duration = 0           # The duration of the slice in seconds
-        self._ipseg = []             # The ipseg of the slice
-        self._measure = measure      # The measure number in which the slice begins
-        self._num_voices = num_voices   # The number of voices
-        self._p_cardinality = 0      # The number of distinct pitches present (excluding duplicates)
-        self._p_count = 0            # The number of pitches present (including duplicates)
-        self._pc_cardinality = 0     # The number of distinct pitch-classes present (excluding duplicates)
-        self._pcseg = None           # The pcseg
-        self._pcsegs = [[] for i in range(num_voices)]            # The pcsegs by voice
-        self._pcset = None           # The pcset
-        self._pcsets = [set() for i in range(num_voices)]            # The pcsets by voice
-        self._pitchseg = []          # The pitch seg (contains duplicates)
-        self._pitchsegs = [[] for i in range(num_voices)]         # The pitch segs by voice
-        self._pnameseg = []          # A list of pitch names
-        self._pnamesegs = [[] for i in range(num_voices)]         # The pnamesegs by voice
-        self._pset = None            # The pset
-        self._psets = [set() for i in range(num_voices)]             # The psets by voice
-        self._pseg = None            # The pseg
-        self._psegs = []             # The psegs by voice
-        self._quarter_duration = quarter_duration  # The duration in quarters
-        self._sc_name = None         # The set-class name of the pcset
-        self._sc_name_carter = None  # The Carter set-class name of the pcset
-        self._tempo = tempo          # The tempo
+        self._duration = 0                      # The duration of the slice in seconds
+        self._ipseg = []                        # The ipseg of the slice
+        self._ioi_in_seconds = None                        # The IOI
+        self._measure = measure                 # The measure number in which the slice begins
+        self._num_voices = num_voices           # The number of voices
+        self._pset_cardinality = 0              # The number of distinct pitches present (excluding duplicates)
+        self._pitch_count_with_duplicates = 0   # The number of pitches present (including duplicates)
+        self._pcset_cardinality = 0             # The number of distinct pitch-classes present (excluding duplicates)
+        self._pcseg = None                      # The pcseg
+        self._pcsegs = [[] for i in range(num_voices)]      # The pcsegs by voice
+        self._pcset = None                      # The pcset
+        self._pcsets = [set() for i in range(num_voices)]   # The pcsets by voice
+        self._pitchseg = []                     # The pitch seg (contains duplicates)
+        self._pitchsegs = [[] for i in range(num_voices)]   # The pitch segs by voice
+        self._pitch_name_list = []                     # A list of pitch names
+        self._pitch_name_lists = [[] for i in range(num_voices)]   # The pitch_name_lists by voice
+        self._pset = None                       # The pset
+        self._psets = [set() for i in range(num_voices)]    # The psets by voice
+        self._pseg = None                       # The pseg
+        self._psegs = []                        # The psegs by voice
+        self._quarter_duration = quarter_duration           # The duration in quarters
+        self._sc_name = None                    # The set-class name of the pcset
+        self._sc_name_carter = None             # The Carter set-class name of the pcset
+        self._tempo = tempo                     # The tempo
 
-        self._ins = None  # The INS of the slice
-        self._lns = None  # The LNS of the slice
-        self._lower_bound = None  # The lower bound of the slice.
-        self._mediant = None  # The MT of the slice
-        self._ns = None  # The NS of the slice. If the lower and upper bounds are defined, but LNS and UNS are not,
+        # Calculations after Burt (2012)
+        self._ins = None                        # The INS of the slice
+        self._lns = None                        # The LNS of the slice
+        self._lower_bound = None                # The lower bound of the slice.
+        self._median_trajectory = None          # The MT of the slice
+        
+        # The NS of the slice. If the lower and upper bounds are defined, but LNS and UNS are not,
         # the NS represents the entire pitch area encompassed by the piece. Otherwise it is None.
-        self._ps = None  # The PS of the slice
-        self._start_position = None  # The start position in quarter notes relative to the current measure
-        self._time_signature = None  # The time signature of the slice
-        self._uns = None  # The UNS of the slice
-        self._upper_bound = None  # The upper bound of the slice.
+        self._ns = None
+        
+        self._ps = None                         # The PS of the slice
+        self._start_position = None             # The start position in quarter notes relative to the current measure
+        self._time_signature = None             # The time signature of the slice
+        self._uns = None                        # The UNS of the slice
+        self._upper_bound = None                # The upper bound of the slice.
 
     @property
     def chord_spacing_contour(self):
@@ -157,6 +162,14 @@ class SalamiSlice:
         :return: The internal negative space (INS)
         """
         return self._ins
+    
+    @property
+    def ioi_in_seconds(self):
+        """
+        The interonset interval (IOI) in *seconds*
+        :return: The interonset interval (IOI) in *seconds*
+        """
+        return self._ioi_in_seconds
 
     @property
     def ipseg(self):
@@ -200,12 +213,12 @@ class SalamiSlice:
         return self._measure
 
     @property
-    def mediant(self):
+    def median_trajectory(self):
         """
         The median trajectory (MT)
         :return: The median trajectory (MT)
         """
-        return self._mediant
+        return self._median_trajectory
 
     @property
     def ns(self):
@@ -216,28 +229,28 @@ class SalamiSlice:
         return self._ns
 
     @property
-    def p_cardinality(self):
+    def pset_cardinality(self):
         """
         The pitch cardinality of the SalamiSlice (excludes duplicates)
         :return: The pitch cardinality
         """
-        return self._p_cardinality
+        return self._pset_cardinality
 
     @property
-    def p_count(self):
+    def pitch_count_with_duplicates(self):
         """
         The pitch count of the SalamiSlice (contains duplicates)
         :return: The pitch count
         """
-        return self._p_count
+        return self._pitch_count_with_duplicates
 
     @property
-    def pc_cardinality(self):
+    def pcset_cardinality(self):
         """
-        The pitch-class cardinality of the SalamiSlice (excludes duplicates)
+        The pitch-class set cardinality of the SalamiSlice (excludes duplicates)
         :return:
         """
-        return self._pc_cardinality
+        return self._pcset_cardinality
 
     @property
     def ps(self):
@@ -288,12 +301,12 @@ class SalamiSlice:
         return self._pitchseg
 
     @property
-    def pnameseg(self):
+    def pitch_name_list(self):
         """
         A list of pitch names
         :return: A list of pitch names
         """
-        return self._pnameseg
+        return self._pitch_name_list
 
     @property
     def pitchsegs(self):
@@ -304,12 +317,12 @@ class SalamiSlice:
         return self._pitchsegs
 
     @property
-    def pnamesegs(self):
+    def pitch_name_lists(self):
         """
         A list of pitch names
         :return: A list of pitch names
         """
-        return self._pnamesegs
+        return self._pitch_name_lists
 
     @property
     def pseg(self):
@@ -446,9 +459,9 @@ class SalamiSlice:
         for i in range(len(pitches)):
             self._pitchseg.append(pitches[i])
             self._pitchsegs[voice].append(pitches[i])
-            self._pnameseg.append(pitch_names[i])
-            self._pnamesegs[voice].append(pitch_names[i])
-            self._p_count += 1
+            self._pitch_name_list.append(pitch_names[i])
+            self._pitch_name_lists[voice].append(pitch_names[i])
+            self._pitch_count_with_duplicates += 1
 
     def copy(self):
         """
@@ -538,10 +551,10 @@ class SalamiSlice:
                 self._pcsegs[v].append(pitch.PitchClass(p.pc))
         self._pseg = list(self._pset)
         self._pseg.sort()
-        self._pnameseg = sort_pitch_name_list(self._pnameseg)
+        self._pitch_name_list = sort_pitch_name_list(self._pitch_name_list)
         for v in range(self._num_voices):
             self._pitchsegs[v].sort()
-            self._pnamesegs[v] = sort_pitch_name_list(self._pnamesegs[v])
+            self._pitch_name_lists[v] = sort_pitch_name_list(self._pitch_name_lists[v])
         for p in self._pseg:
             self._pcseg.append(pitch.PitchClass(p.pc))
         if len(self._ipseg) > 0:
@@ -551,8 +564,8 @@ class SalamiSlice:
         self._chord_spacing_contour = cseg.simplify([ip for ip in self._ipseg])
 
         # Calculate values
-        self._p_cardinality = len(self._pset)
-        self._pc_cardinality = len(self._pcset)
+        self._pset_cardinality = len(self._pset)
+        self._pcset_cardinality = len(self._pcset)
         self._duration = (Decimal(60) / Decimal(self._tempo)) * (Decimal(self._quarter_duration.numerator) /
                                                                  Decimal(self._quarter_duration.denominator))
 
@@ -562,13 +575,13 @@ class SalamiSlice:
         # Calculate set theory info
         sc.pcset = self._pcset
         self._sc_name = sc.name_morris
-        if 1 < self.pc_cardinality < 11:
+        if 1 < self.pcset_cardinality < 11:
             self._sc_name_carter = sc.name_carter
         else:
             self._sc_name_carter = ""
-        if (self._sc_name_carter == "18" or self._sc_name_carter == "23") and self._pc_cardinality == 4:
+        if (self._sc_name_carter == "18" or self._sc_name_carter == "23") and self._pcset_cardinality == 4:
             self._core = True
-        if self._sc_name_carter == "35" and self._pc_cardinality == 6:
+        if self._sc_name_carter == "35" and self._pcset_cardinality == 6:
             self._core = True
         self._derived_core_associations = sc.derived_core
         if self._derived_core_associations is not None:
@@ -593,12 +606,12 @@ class SalamiSlice:
             if self._ps is None or self._ps == 0:
                 self._lns = None
                 self._uns = None
-                self._mediant = None
+                self._median_trajectory = None
                 self._ns = self._upper_bound - self._lower_bound + 1
             else:
                 self._lns = self._pseg[0].p - self._lower_bound
                 self._uns = self._upper_bound - self._pseg[-1].p
-                self._mediant = (self._lns - self._uns) / 2
+                self._median_trajectory = (self._lns - self._uns) / 2
 
 
 def calculate_chord_spacing_index(pset):

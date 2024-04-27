@@ -24,7 +24,7 @@ import music21
 import pandas as pd
 
 
-def parser(score):
+def part_ioi_calculator(score):
     """
     Parses a score and gets the individual note, rest, and chord items. Requires that each staff
     not have separate Voice objects.

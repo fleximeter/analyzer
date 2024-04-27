@@ -31,23 +31,25 @@ class Results:
         :param measure_num_first: The first measure number analyzed
         :param measure_num_last: The last measure number analyzed
         """
-        self._max_p_count = 0  # The maximum number of pitches in a chord (may be greater than PS)
+        self._max_pitch_count_with_duplicates = 0  # The maximum number of pitches in a chord (may be greater than PS)
         self._chord_spacing_contour_duration = None
         self._chord_spacing_contour_frequency = None
         self._duration = 0
-        self._ins_avg = 0  # The INS average
+        self._duration_avg = 0  # The slice duration average. Note that this is not IOI; it includes slices that are rests.
+        self._ins_avg = 0       # The INS average
         self._ins_max = 0
         self._ins_min = 0
-        self._lns_avg = 0  # The LNS average
+        self._ioi_avg_in_seconds = 0       # The IOI (interonset interval) average
+        self._lns_avg = 0       # The LNS average
         self._lns_max = 0
         self._lns_min = 0
         self._lower_bound = 0
-        self._lps_card = 0  # The cardinality of LPS
+        self._lps_card = 0      # The cardinality of LPS
         self._measure_num_first = measure_num_first
         self._measure_num_last = measure_num_last
-        self._mediant_avg = 0  # The MT average
-        self._mediant_max = 0
-        self._mediant_min = 0
+        self._median_trajectory_avg = 0   # The MT average
+        self._median_trajectory_max = 0
+        self._median_trajectory_min = 0
         self._num_measures = measure_num_last - measure_num_first + 1
         self._num_voices = voices
         self._pc_duration = None
@@ -85,12 +87,12 @@ class Results:
         self._calculate_values()
 
     @property
-    def max_p_count(self):
+    def max_pitch_count_with_duplicates(self):
         """
-        The maximum cardinality of the analyzed VSlices
-        :return: The maximum cardinality of the analyzed VSlices
+        The maximum cardinality of the analyzed SalamiSlices
+        :return: The maximum cardinality of the analyzed SalamiSlices
         """
-        return self._max_p_count
+        return self._max_pitch_count_with_duplicates
 
     @property
     def chord_spacing_contour_duration(self):
@@ -113,10 +115,18 @@ class Results:
     @property
     def duration(self):
         """
-        The total duration of all the VSlices
-        :return: The total duration of all the VSlices
+        The total duration of all the SalamiSlices in seconds
+        :return: The total duration of all the SalamiSlices in seconds
         """
         return self._duration
+
+    @property
+    def duration_avg(self):
+        """
+        The average duration of all the SalamiSlices in seconds
+        :return: The average duration of all the SalamiSlices in seconds
+        """
+        return self._duration_avg
 
     @property
     def ins_avg(self):
@@ -141,7 +151,15 @@ class Results:
         :return: The minimum internal negative space (INS)
         """
         return self._ins_min
-
+    
+    @property
+    def ioi_avg_in_seconds(self):
+        """
+        The average interonset interval (IOI) in *seconds*
+        :return: The average interonset interval (IOI) in *seconds*
+        """
+        return self._ioi_avg_in_seconds
+    
     @property
     def lns_avg(self):
         """
@@ -169,8 +187,8 @@ class Results:
     @property
     def lower_bound(self):
         """
-        The lower bound of the VSlices
-        :return: The lower bound of the VSlices
+        The lower bound of the SalamiSlices
+        :return: The lower bound of the SalamiSlices
         """
         return self._lower_bound
 
@@ -199,28 +217,28 @@ class Results:
         return self._measure_num_last
 
     @property
-    def mediant_avg(self):
+    def median_trajectory_avg(self):
         """
         The average median trajectory
         :return: The average median trajectory
         """
-        return self._mediant_avg
+        return self._median_trajectory_avg
 
     @property
-    def mediant_max(self):
+    def median_trajectory_max(self):
         """
         The maximum median trajectory
         :return: The maximum median trajectory
         """
-        return self._mediant_max
+        return self._median_trajectory_max
 
     @property
-    def mediant_min(self):
+    def median_trajectory_min(self):
         """
         The minimum median trajectory
         :return: The minimum median trajectory
         """
-        return self._mediant_min
+        return self._median_trajectory_min
 
     @property
     def num_measures(self):
@@ -439,16 +457,16 @@ class Results:
     @property
     def quarter_duration(self):
         """
-        The duration of the VSlices, in quarter notes
-        :return: The duration of the VSlices, in quarter notes
+        The duration of the SalamiSlices, in quarter notes
+        :return: The duration of the SalamiSlices, in quarter notes
         """
         return self._quarter_duration
 
     @property
     def slices(self):
         """
-        The VSlices
-        :return: The VSlices
+        The SalamiSlices
+        :return: The SalamiSlices
         """
         return self._slices
 
@@ -487,8 +505,8 @@ class Results:
     @property
     def upper_bound(self):
         """
-        The upper bound of the VSlices
-        :return: The upper bound of the VSlices
+        The upper bound of the SalamiSlices
+        :return: The upper bound of the SalamiSlices
         """
         return self._upper_bound
 
@@ -505,8 +523,8 @@ class Results:
             self._upper_bound = 0
             self._ins_min = 0
             self._lns_min = 0
-            self._mediant_max = 0
-            self._mediant_min = 0
+            self._median_trajectory_max = 0
+            self._median_trajectory_min = 0
             
             i = 0
             while i < len(self._slices):
@@ -516,8 +534,8 @@ class Results:
                     self._upper_bound = self._slices[0].upper_bound
                     self._ins_min = self._lps_card
                     self._lns_min = self._lps_card
-                    self._mediant_max = self._lower_bound
-                    self._mediant_min = self._upper_bound
+                    self._median_trajectory_max = self._lower_bound
+                    self._median_trajectory_min = self._upper_bound
                     break
                 i += 1
             
@@ -542,13 +560,17 @@ class Results:
             self._ps_min = self._lps_card
             self._uns_min = self._lps_card
             valid_durations_for_spacing = 0
+            
+            ioi_count = 0
 
             # Sum values for averages and establish maxes and mins
             for s in self._slices:
                 self._duration += s.duration
                 self._quarter_duration += s.quarter_duration
-                if s.p_cardinality > 0:
+                if s.pset_cardinality > 0:
                     self._pset_card_avg += len(s.pset) * s.duration
+                    self._ioi_avg_in_seconds += s.ioi_in_seconds
+                    ioi_count += 1
                     if s.chord_spacing_index is not np.nan:
                         self._chord_spacing_index_avg += Decimal(s.chord_spacing_index) * s.duration
                         valid_durations_for_spacing += s.duration
@@ -571,7 +593,7 @@ class Results:
                 if s.uns is not None:
                     self._ins_avg += s.ins
                     self._lns_avg += s.lns
-                    self._mediant_avg += s.mediant
+                    self._median_trajectory_avg += s.median_trajectory
                     self._uns_avg += s.uns
                     if self._ins_max < s.ins:
                         self._ins_max = s.ins
@@ -581,16 +603,16 @@ class Results:
                         self._lns_max = s.lns
                     if self._lns_min > s.lns:
                         self._lns_min = s.lns
-                    if self._mediant_max < s.mediant:
-                        self._mediant_max = s.mediant
-                    if self._mediant_max > s.mediant:
-                        self._mediant_max = s.mediant
+                    if self._median_trajectory_max < s.median_trajectory:
+                        self._median_trajectory_max = s.median_trajectory
+                    if self._median_trajectory_max > s.median_trajectory:
+                        self._median_trajectory_max = s.median_trajectory
                     if self._uns_max < s.uns:
                         self._uns_max = s.uns
                     if self._uns_min > s.uns:
                         self._uns_min = s.uns
-                if self._max_p_count < s.p_cardinality:
-                    self._max_p_count = s.p_cardinality
+                if self._max_pitch_count_with_duplicates < s.pset_cardinality:
+                    self._max_pitch_count_with_duplicates = s.pset_cardinality
 
             # Calculate pitch frequency
             for i in range(0, len(self._slices)):
@@ -665,6 +687,8 @@ class Results:
         # Finalize average calculation
         self._ps_avg /= len(self._slices)
         self._pset_card_avg = float(self._pset_card_avg / self._duration)
+        self._ioi_avg_in_seconds /= ioi_count
+        self._duration_avg = self.duration / len(self._slices)
     
         if valid_durations_for_spacing != 0:
             self._chord_spacing_index_avg = float(self._chord_spacing_index_avg / valid_durations_for_spacing)
@@ -675,7 +699,7 @@ class Results:
         if non_null != 0:
             self._ins_avg /= non_null
             self._lns_avg /= non_null
-            self._mediant_avg /= non_null
+            self._median_trajectory_avg /= non_null
             self._uns_avg /= non_null
 
     def _get_non_null(self):

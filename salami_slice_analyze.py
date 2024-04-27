@@ -102,7 +102,7 @@ def analyze_with_sections(input_xml, section_divisions, use_local, starting_meas
     return slice_parts(parts, get_slice_num(parts), section_divisions, use_local, starting_measure_num, ending_measure_num, tempo_map=tempo_map)
 
 
-def clean_slices(slices, match_tempo=False, sections=None):
+def clean_slices(salami_slices, match_tempo=False, sections=None):
     """
     Cleans up a list of v_slices
     :param slices: A list of v_slices
@@ -111,21 +111,29 @@ def clean_slices(slices, match_tempo=False, sections=None):
     """
     # Remove duplicate slices, and update durations
     i = 1
-    while i < len(slices):
+    while i < len(salami_slices):
         equal = True
-        if match_tempo and slices[i]._tempo != slices[i - 1]._tempo:
+        if match_tempo and salami_slices[i]._tempo != salami_slices[i - 1]._tempo:
             equal = False
-        elif slices[i].pitchseg != slices[i - 1].pitchseg:
+        elif salami_slices[i].pitchseg != salami_slices[i - 1].pitchseg:
             equal = False
         elif sections is not None:
-            if slices[i].measure in sections and slices[i - 1].measure < slices[i].measure:
+            if salami_slices[i].measure in sections and salami_slices[i - 1].measure < salami_slices[i].measure:
                 equal = False
         if equal:
-            slices[i - 1].duration += slices[i].duration
-            slices[i - 1].quarter_duration += slices[i].quarter_duration
-            del slices[i]
+            salami_slices[i - 1].duration += salami_slices[i].duration
+            salami_slices[i - 1].quarter_duration += salami_slices[i].quarter_duration
+            del salami_slices[i]
         else:
             i += 1
+    
+    # Calculate IOI
+    for j, salami_slice in enumerate(salami_slices):
+        if salami_slice.pset_cardinality > 0:
+            if j + 1 < len(salami_slices) and salami_slices[j+1].pset_cardinality == 0:
+                salami_slice._ioi_in_seconds = salami_slices[j].duration + salami_slices[j+1].duration
+            else:
+                salami_slice._ioi_in_seconds = salami_slice.duration
 
 
 def factor(n):
@@ -576,11 +584,12 @@ def read_analysis_from_file(path):
             cslice._derived_core = bool(dslice["derived_core"])
             cslice._derived_core_associations = dslice["derived_core_associations"]
             cslice._duration = Decimal(dslice["duration"])
+            cslice._ioi_in_seconds = dslice["ioi_in_seconds"]
             cslice._ipseg = dslice["ipseg"]
             cslice._measure = dslice["measure"]
-            cslice._p_cardinality = dslice["p_cardinality"]
-            cslice._p_count = dslice["p_count"]
-            cslice._pc_cardinality = dslice["pc_cardinality"]
+            cslice._pset_cardinality = dslice["pset_cardinality"]
+            cslice._pitch_count_with_duplicates = dslice["pitch_count_with_duplicates"]
+            cslice._pcset_cardinality = dslice["pcset_cardinality"]
             cslice._pcseg = [pitch.PitchClass(pc) for pc in dslice["pcseg"]]
             cslice._pcset = set(cslice.pcseg)
             cslice._pcsegs = [[pitch.PitchClass(pc) for pc in dslice["pcsegs"][v]]
@@ -589,8 +598,8 @@ def read_analysis_from_file(path):
             cslice._pcsets = [set(cslice.pcsegs[v]) for v in range(len(cslice.pcsegs))]
             cslice._pitchseg = dslice["pitchseg"]
             cslice._pitchsegs = dslice["pitchsegs"]
-            cslice._pnameseg = dslice["pnameseg"]
-            cslice._pnamesegs = dslice["pnamesegs"]
+            cslice._pitch_name_list = dslice["pitch_name_list"]
+            cslice._pitch_name_lists = dslice["pitch_name_lists"]
             cslice._pseg = [pitch.Pitch(p) for p in dslice["pseg"]]
             cslice._psegs = [[pitch.Pitch(p) for p in dslice["psegs"][v]] for v in range(len(dslice["psegs"]))]
             cslice._pset = set(cslice.pseg)
@@ -601,7 +610,7 @@ def read_analysis_from_file(path):
             cslice._ins = dslice["ins"]
             cslice._lns = dslice["lns"]
             cslice._lower_bound = dslice["lower_bound"]
-            cslice._mediant = dslice["mediant"]
+            cslice._median_trajectory = dslice["median_trajectory"]
             cslice._ns = dslice["ns"]
             cslice._ps = dslice["ps"]
             cslice._start_position = Fraction(dslice["start_position"][0], dslice["start_position"][1])
@@ -610,21 +619,23 @@ def read_analysis_from_file(path):
             cslice._upper_bound = dslice["upper_bound"]
             slices.append(cslice)
         result = Results(slices, item["measure_num_first"], item["measure_num_last"], len(item["pitch_highest_voices"]))
-        result._max_p_count = item["max_p_count"]
+        result._max_pitch_count_with_duplicates = item["max_pitch_count_with_duplicates"]
         result._chord_spacing_contour_duration = {}
         result._chord_spacing_contour_frequency = item["chord_spacing_contour_frequency"]
         result._duration = Decimal(item["duration"])
+        result._duration_avg = Decimal(item["duration_avg"])
         result._ins_avg = item["ins_avg"]
         result._ins_max = item["ins_max"]
         result._ins_min = item["ins_min"]
+        result._ioi_avg_in_seconds = Decimal(item["ioi_avg_in_seconds"])
         result._lns_avg = item["lns_avg"]
         result._lns_max = item["lns_max"]
         result._lns_min = item["lns_min"]
         result._lower_bound = item["lower_bound"]
         result._lps_card = item["lps_card"]
-        result._mediant_avg = item["mediant_avg"]
-        result._mediant_max = item["mediant_max"]
-        result._mediant_min = item["mediant_min"]
+        result._median_trajectory_avg = item["median_trajectory_avg"]
+        result._median_trajectory_max = item["median_trajectory_max"]
+        result._median_trajectory_min = item["median_trajectory_min"]
         result._num_measures = item["num_measures"]
         result._num_voices = len(item["pitch_highest_voices"])
         result._pitch_highest = item["pitch_highest"]
@@ -697,13 +708,15 @@ def write_analysis_to_file(results, path):
     data = []
     for i in range(len(results)):
         data.append({})
-        data[i]["max_p_count"] = results[i].max_p_count
+        data[i]["max_pitch_count_with_duplicates"] = results[i].max_pitch_count_with_duplicates
         data[i]["chord_spacing_contour_duration"] = {}
         data[i]["chord_spacing_contour_frequency"] = results[i].chord_spacing_contour_frequency
         data[i]["duration"] = str(results[i].duration)
+        data[i]["duration_avg"] = str(results[i].duration_avg)
         data[i]["ins_avg"] = results[i].ins_avg
         data[i]["ins_max"] = results[i].ins_max
         data[i]["ins_min"] = results[i].ins_min
+        data[i]["ioi_avg_in_seconds"] = results[i].ioi_avg_in_seconds
         data[i]["lns_avg"] = results[i].lns_avg
         data[i]["lns_max"] = results[i].lns_max
         data[i]["lns_min"] = results[i].lns_min
@@ -711,9 +724,9 @@ def write_analysis_to_file(results, path):
         data[i]["lps_card"] = results[i].lps_card
         data[i]["measure_num_first"] = results[i].measure_num_first
         data[i]["measure_num_last"] = results[i].measure_num_last
-        data[i]["mediant_avg"] = results[i].mediant_avg
-        data[i]["mediant_max"] = results[i].mediant_max
-        data[i]["mediant_min"] = results[i].mediant_min
+        data[i]["median_trajectory_avg"] = results[i].median_trajectory_avg
+        data[i]["median_trajectory_max"] = results[i].median_trajectory_max
+        data[i]["median_trajectory_min"] = results[i].median_trajectory_min
         data[i]["num_measures"] = results[i].num_measures
         data[i]["pitch_highest"] = results[i].pitch_highest
         data[i]["pitch_highest_voices"] = results[i].pitch_highest_voices
@@ -774,16 +787,17 @@ def write_analysis_to_file(results, path):
             cslice["derived_core_associations"] = rslice.derived_core_associations
             cslice["duration"] = str(rslice.duration)
             cslice["ipseg"] = rslice.ipseg
+            cslice["ioi_in_seconds"] = rslice.ioi_in_seconds
             cslice["measure"] = rslice.measure
-            cslice["p_cardinality"] = rslice.p_cardinality
-            cslice["p_count"] = rslice.p_count
-            cslice["pc_cardinality"] = rslice.pc_cardinality
+            cslice["pset_cardinality"] = rslice.pset_cardinality
+            cslice["pitch_count_with_duplicates"] = rslice.pitch_count_with_duplicates
+            cslice["pcset_cardinality"] = rslice.pcset_cardinality
             cslice["pcseg"] = [pc.pc for pc in rslice.pcseg]
             cslice["pcsegs"] = [[pc.pc for pc in rslice.pcsegs[v]] for v in range(len(rslice.pcsegs))]
             cslice["pitchseg"] = [p for p in rslice.pitchseg]
             cslice["pitchsegs"] = [[p for p in rslice.pitchsegs[v]] for v in range(len(rslice.pitchsegs))]
-            cslice["pnameseg"] = [pname for pname in rslice.pnameseg]
-            cslice["pnamesegs"] = [[pname for pname in rslice.pnamesegs[v]] for v in range(len(rslice.pnamesegs))]
+            cslice["pitch_name_list"] = [pname for pname in rslice.pitch_name_list]
+            cslice["pitch_name_lists"] = [[pname for pname in rslice.pitch_name_lists[v]] for v in range(len(rslice.pitch_name_lists))]
             cslice["pseg"] = [p.p for p in rslice.pseg]
             cslice["psegs"] = [[p.p for p in rslice.psegs[v]] for v in range(len(rslice.psegs))]
             cslice["quarter_duration"] = [rslice.quarter_duration.numerator, rslice.quarter_duration.denominator]
@@ -792,7 +806,7 @@ def write_analysis_to_file(results, path):
             cslice["ins"] = rslice.ins
             cslice["lns"] = rslice.lns
             cslice["lower_bound"] = rslice.lower_bound
-            cslice["mediant"] = rslice.mediant
+            cslice["median_trajectory"] = rslice.median_trajectory
             cslice["ns"] = rslice.ns
             cslice["ps"] = rslice.ps
             cslice["start_position"] = [rslice.start_position.numerator, rslice.start_position.denominator]
@@ -820,6 +834,8 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
         "section": [],
         "start_time": [], 
         "duration": [], 
+        "duration_avg": [], 
+        "ioi_avg": [], 
         "pset_card_avg": [], 
         "csi_avg": [], 
         "lps": [], 
@@ -853,6 +869,8 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
     report["section"].append(section_name)
     report["start_time"].append(float(results.start_time))
     report["duration"].append(float(results.duration))
+    report["duration_avg"].append(float(results.duration_avg))
+    report["ioi_avg"].append(float(results.ioi_avg_in_seconds))
     report["pset_card_avg"].append(results.pset_card_avg)
     report["csi_avg"].append(results.chord_spacing_index_avg)
     report["lps"].append(results.lps_card)
@@ -870,9 +888,9 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
     report["ins_avg"].append(results.ins_avg)
     report["ins_min"].append(results.ins_min)
     report["ins_max"].append(results.ins_max)
-    report["mt_avg"].append(results.mediant_avg)
-    report["mt_min"].append(results.mediant_min)
-    report["mt_max"].append(results.mediant_max)
+    report["mt_avg"].append(results.median_trajectory_avg)
+    report["mt_min"].append(results.median_trajectory_min)
+    report["mt_max"].append(results.median_trajectory_max)
     
     for i in range(0, 12):
         if i in results.pc_duration.keys():
@@ -899,6 +917,8 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
         report["section"].append(f"{section_name} (Voice {v})")
         report["start_time"].append(None)
         report["duration"].append(None)
+        report["duration_avg"].append(None)
+        report["ioi_avg"].append(None)
         report["pset_card_avg"].append(None)
         report["csi_avg"].append(None)
         report["lps"].append(results.pitch_highest_voices[v] - results.pitch_lowest_voices[v] + 1)
@@ -989,6 +1009,7 @@ def write_report(file, results):
         "measure_no": [],
         "start_time": [],
         "duration": [],
+        "ioi": [],
         "quarter_length": [],
         "chord_cardinality": [],
         "ps": [],
@@ -1009,7 +1030,7 @@ def write_report(file, results):
         "chord_spacing_contour": [],
         "chord_spacing_index": []
     }
-    for i in range(results.max_p_count):
+    for i in range(results.max_pitch_count_with_duplicates):
         report[f"pitch_{i + 1}"] = []
     for i in range(results.ps_max):
         report[f"pn_{i + 1}"] = []
@@ -1023,15 +1044,19 @@ def write_report(file, results):
             report["measure_no"].append(item.measure)
             report["start_time"].append(float(position))
             report["duration"].append(float(item.duration))
+            if item.ioi_in_seconds is None:
+                report["ioi"].append(item.ioi_in_seconds)
+            else:
+                report["ioi"].append(float(item.ioi_in_seconds))
             report["quarter_length"].append(item.quarter_duration)
-            report["chord_cardinality"].append(item.p_count)
+            report["chord_cardinality"].append(item.pitch_count_with_duplicates)
             report["ps"].append(item.ps)
-            report["match"].append(item.p_count == item.ps)
+            report["match"].append(item.pitch_count_with_duplicates == item.ps)
             report["ns"].append(item.ns)
             report["uns"].append(item.uns)
             report["ins"].append(item.ins)
             report["lns"].append(item.lns)
-            report["mt"].append(item.mediant)
+            report["mt"].append(item.median_trajectory)
             report["morris_name"].append(item.sc_name)
             report["carter_name"].append(item.sc_name_carter)
             report["core"].append(item.core)
@@ -1042,9 +1067,9 @@ def write_report(file, results):
             report["psc"].append(item.get_ipseg_string())
             report["chord_spacing_contour"].append(item.get_chord_spacing_contour_string())
             report["chord_spacing_index"].append(item.chord_spacing_index)
-            for i in range(results.max_p_count):
+            for i in range(results.max_pitch_count_with_duplicates):
                 if i < len(item.pitchseg):
-                    report[f"pitch_{i + 1}"].append(item.pnameseg[i])
+                    report[f"pitch_{i + 1}"].append(item.pitch_name_list[i])
                 else:
                     report[f"pitch_{i + 1}"].append(None)
             for i in range(results.ps_max):

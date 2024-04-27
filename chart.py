@@ -45,8 +45,8 @@ def chart_cardinality(results, x_axis_time=False, title="Cardinality Chart", siz
         else:
             position = s.measure + float(s.start_position / s.time_signature.barDuration.quarterLength)
             x.append(position)
-        if s.p_cardinality > 0:
-            ps_s.append(s.p_cardinality)
+        if s.pset_cardinality > 0:
+            ps_s.append(s.pset_cardinality)
         else:
             ps_s.append(0)
     fig = matplotlib.pyplot.figure(figsize=size, dpi=600)
@@ -96,7 +96,7 @@ def chart_chord_spacing_index(results, x_axis_time=False, title="Chord Spacing I
         else:
             position = s.measure + float(s.start_position / s.time_signature.barDuration.quarterLength)
             x.append(position)
-        if s.p_cardinality > 0:
+        if s.pset_cardinality > 0:
             ps_s.append(s.chord_spacing_index)
         else:
             ps_s.append(numpy.nan)
@@ -138,7 +138,7 @@ def chart_pitch_onset(results, x_axis_time=False, title="Pitch Onset Graph", siz
     """
     matplotlib.pyplot.clf()
     matplotlib.pyplot.rcParams["font.family"] = "Academico"
-    pitches = [[] for i in range(results.max_p_count)]
+    pitches = [[] for i in range(results._max_pitch_count_with_duplicates)]
     x = []
     position_time = results.start_time
     for s in range(len(results.slices)):
