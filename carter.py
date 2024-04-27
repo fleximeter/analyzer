@@ -304,4 +304,4 @@ if __name__ == "__main__":
     print("################### Salami Slice Analyzer ####################\n" + \
           "Copyright (c) 2024 by Jeffrey Martin. All rights reserved.\nhttps://www.jeffreymartincomposer.com\n")
     c_analyze_with_sections()
-    # c_analyze_reduction()
+    c_analyze_reduction()

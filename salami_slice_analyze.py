@@ -716,7 +716,7 @@ def write_analysis_to_file(results, path):
         data[i]["ins_avg"] = results[i].ins_avg
         data[i]["ins_max"] = results[i].ins_max
         data[i]["ins_min"] = results[i].ins_min
-        data[i]["ioi_avg_in_seconds"] = results[i].ioi_avg_in_seconds
+        data[i]["ioi_avg_in_seconds"] = str(results[i].ioi_avg_in_seconds)
         data[i]["lns_avg"] = results[i].lns_avg
         data[i]["lns_max"] = results[i].lns_max
         data[i]["lns_min"] = results[i].lns_min
@@ -787,7 +787,7 @@ def write_analysis_to_file(results, path):
             cslice["derived_core_associations"] = rslice.derived_core_associations
             cslice["duration"] = str(rslice.duration)
             cslice["ipseg"] = rslice.ipseg
-            cslice["ioi_in_seconds"] = rslice.ioi_in_seconds
+            cslice["ioi_in_seconds"] = str(rslice.ioi_in_seconds)
             cslice["measure"] = rslice.measure
             cslice["pset_cardinality"] = rslice.pset_cardinality
             cslice["pitch_count_with_duplicates"] = rslice.pitch_count_with_duplicates
