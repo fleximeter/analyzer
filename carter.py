@@ -30,6 +30,7 @@ def c_analyze_with_sections():
     """
     Analyzes Carter's fifth string quartet, as well as analyzing each section separately
     """
+    # A map of tempos for the piece
     tempo_map = {
         1: 72,
         25: 96,
@@ -200,36 +201,36 @@ def make_charts_general(results, path, voices):
     :param voices: A list of voices
     :return:
     """
-    chart.chart_cardinality(results, False, "Chord Cardinality Graph for Elliott Carter’s Fifth String Quartet",
+    chart.chart_cardinality(results, False, "Chord Cardinality Graph for Elliott Carter\u2019s Fifth String Quartet",
                             size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_m"))
-    chart.chart_cardinality(results, True, "Chord Cardinality Graph for Elliott Carter’s Fifth String Quartet",
+    chart.chart_cardinality(results, True, "Chord Cardinality Graph for Elliott Carter\u2019s Fifth String Quartet",
                             size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_t"))
-    chart.chart_pitch_onset(results, False, "Pitch Onsets in Elliott Carter’s Fifth String Quartet", (6.5, 3),
+    chart.chart_pitch_onset(results, False, "Pitch Onsets in Elliott Carter\u2019s Fifth String Quartet", (6.5, 3),
                             os.path.join(path, "register_analysis_files\\graphs\\onset_measure"))
-    chart.chart_chord_spacing_index(results, False, "Chord Spacing Indices in Elliott Carter's Fifth String Quartet",
+    chart.chart_chord_spacing_index(results, False, "Chord Spacing Indices in Elliott Carter\u2019s Fifth String Quartet",
                                    (6.5, 3), os.path.join(path, "register_analysis_files\\graphs\\chord_spacing_index_m"))
-    chart.chart_chord_spacing_index(results, True, "Chord Spacing Indices in Elliott Carter's Fifth String Quartet",
+    chart.chart_chord_spacing_index(results, True, "Chord Spacing Indices in Elliott Carter\u2019s Fifth String Quartet",
                                    (6.5, 3), os.path.join(path, "register_analysis_files\\graphs\\chord_spacing_index_t"))
     for i in range(len(voices)):
-        chart.chart_pitch_onset(results, False, f"Pitch Onsets in Elliott Carter’s Fifth String Quartet "
+        chart.chart_pitch_onset(results, False, f"Pitch Onsets in Elliott Carter\u2019s Fifth String Quartet "
                                                    f"({voices[i]})", (6.5, 3),
                                 os.path.join(path, f"register_analysis_files\\graphs\\onset_measure_{voices[i]}"), i)
-    chart.chart_pitch_onset(results, True, "Pitch Onsets in Elliott Carter’s Fifth String Quartet", (6.5, 3),
+    chart.chart_pitch_onset(results, True, "Pitch Onsets in Elliott Carter\u2019s Fifth String Quartet", (6.5, 3),
                             os.path.join(path, "register_analysis_files\\graphs\\onset_time"))
     for i in range(len(voices)):
-        chart.chart_pitch_onset(results, True, f"Pitch Onsets in Elliott Carter’s Fifth String Quartet "
+        chart.chart_pitch_onset(results, True, f"Pitch Onsets in Elliott Carter\u2019s Fifth String Quartet "
                                                   f"({voices[i]})", (6.5, 3),
                                 os.path.join(path, f"register_analysis_files\\graphs\\onset_time_{voices[i]}"), i)
-    chart.chart_pitch_duration(results, "Pitch Duration in Elliott Carter’s Fifth String Quartet", (6.5, 3),
+    chart.chart_pitch_duration(results, "Pitch Duration in Elliott Carter\u2019s Fifth String Quartet", (6.5, 3),
                                os.path.join(path, "register_analysis_files\\graphs\\pitch_duration"))
     for i in range(len(voices)):
-        chart.chart_pitch_duration(results, f"Pitch Duration in Elliott Carter’s Fifth String Quartet "
+        chart.chart_pitch_duration(results, f"Pitch Duration in Elliott Carter\u2019s Fifth String Quartet "
                                                f"({voices[i]})", (6.5, 3),
                                    os.path.join(path, f"register_analysis_files\\graphs\\pitch_duration_{voices[i]}"), i)
-    chart.chart_pc_duration(results, "Pitch-Class Duration in Elliott Carter’s Fifth String Quartet", (3, 3),
+    chart.chart_pc_duration(results, "Pitch-Class Duration in Elliott Carter\u2019s Fifth String Quartet", (3, 3),
                             os.path.join(path, "register_analysis_files\\graphs\\pc_duration"))
     for i in range(len(voices)):
-        chart.chart_pc_duration(results, f"Pitch-Class Duration in Elliott Carter’s Fifth String Quartet "
+        chart.chart_pc_duration(results, f"Pitch-Class Duration in Elliott Carter\u2019s Fifth String Quartet "
                                             f"({voices[i]})", (3, 3),
                                 os.path.join(path, f"register_analysis_files\\graphs\\pc_duration_{voices[i]}"), i)
 
@@ -269,33 +270,33 @@ def make_charts_sections(results, i, path, voices, section_names):
     dpc_path += cname[len(cname) - 1]
 
     # Create charts
-    chart.chart_cardinality(results[i], False, f"Chord Cardinality Graph for Section {i} – {section_names[i - 1]}",
+    chart.chart_cardinality(results[i], False, f"Chord Cardinality Graph for Section {i} \u2013 {section_names[i - 1]}",
                             path=cm_path)
-    chart.chart_cardinality(results[i], True, f"Chord Cardinality Graph for Section {i} – {section_names[i - 1]}",
+    chart.chart_cardinality(results[i], True, f"Chord Cardinality Graph for Section {i} \u2013 {section_names[i - 1]}",
                             path=ct_path)
-    chart.chart_chord_spacing_index(results[i], False, f"Chord Spacing Indices in Section {i} – {section_names[i - 1]}",
+    chart.chart_chord_spacing_index(results[i], False, f"Chord Spacing Indices in Section {i} \u2013 {section_names[i - 1]}",
                                    path=csim_path)
-    chart.chart_chord_spacing_index(results[i], True, f"Chord Spacing Indices in Section {i} – {section_names[i - 1]}",
+    chart.chart_chord_spacing_index(results[i], True, f"Chord Spacing Indices in Section {i} \u2013 {section_names[i - 1]}",
                                    path=csit_path)
-    chart.chart_pitch_onset(results[i], False, f"Pitch Onsets in Section {i} – {section_names[i - 1]}",
+    chart.chart_pitch_onset(results[i], False, f"Pitch Onsets in Section {i} \u2013 {section_names[i - 1]}",
                             path=om_path)
     for j in range(len(voices)):
-        chart.chart_pitch_onset(results[i], False, f"Pitch Onsets in Section {i} ({voices[j]}) – "
+        chart.chart_pitch_onset(results[i], False, f"Pitch Onsets in Section {i} ({voices[j]}) \u2013 "
                                                    f"{section_names[i - 1]}", path=f"{om_path}_{voices[j]}", voice=j)
-    chart.chart_pitch_onset(results[i], True, f"Pitch Onsets in Section {i} – {section_names[i - 1]}",
+    chart.chart_pitch_onset(results[i], True, f"Pitch Onsets in Section {i} \u2013 {section_names[i - 1]}",
                             path=ot_path)
     for j in range(len(voices)):
-        chart.chart_pitch_onset(results[i], True, f"Pitch Onsets in Section {i} ({voices[j]}) – {section_names[i - 1]}",
+        chart.chart_pitch_onset(results[i], True, f"Pitch Onsets in Section {i} ({voices[j]}) \u2013 {section_names[i - 1]}",
                                 path=f"{ot_path}_{voices[j]}", voice=j)
-    chart.chart_pitch_duration(results[i], f"Pitch Durations in Section {i} – {section_names[i - 1]}",
+    chart.chart_pitch_duration(results[i], f"Pitch Durations in Section {i} \u2013 {section_names[i - 1]}",
                                path=dp_path)
     for j in range(len(voices)):
-        chart.chart_pitch_duration(results[i], f"Pitch Durations in Section {i} ({voices[j]}) – {section_names[i - 1]}",
+        chart.chart_pitch_duration(results[i], f"Pitch Durations in Section {i} ({voices[j]}) \u2013 {section_names[i - 1]}",
                                    path=f"{dp_path}_{voices[j]}", voice=j)
-    chart.chart_pc_duration(results[i], f"Pitch-Class Durations in Section {i} – {section_names[i - 1]}",
+    chart.chart_pc_duration(results[i], f"Pitch-Class Durations in Section {i} \u2013 {section_names[i - 1]}",
                             path=dpc_path)
     for j in range(len(voices)):
-        chart.chart_pc_duration(results[i], f"Pitch-Class Durations in Section {i} ({voices[j]}) – "
+        chart.chart_pc_duration(results[i], f"Pitch-Class Durations in Section {i} ({voices[j]}) \u2013 "
                                             f"{section_names[i - 1]}", path=f"{dpc_path}_{voices[j]}", voice=j)
 
 

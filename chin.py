@@ -30,7 +30,9 @@ def c_analyze():
     """
     Analyzes Chin's "In C" without analyzing each section separately
     """
-    
+    # A map of tempos for the piece
+    tempo_map = {1: 84, 26: 108}
+
     # Path names
     path = "D:\\chin_paper\\"
     path_laptop = "C:\\Users\\jeffr\\chin_paper\\"
@@ -47,8 +49,8 @@ def c_analyze():
     print("Analyzing entire piece...")
     results = None
 
-    results = salami_slice_analyze.analyze(xml, tempo_map={1: Decimal(80), 26: Decimal(108)})
-    results_staff = [salami_slice_analyze.analyze(xml, staff_indices=[i], tempo_map={1: Decimal(80), 26: Decimal(108)}) for i in range(0, 6)]
+    results = salami_slice_analyze.analyze(xml, tempo_map=tempo_map)
+    results_staff = [salami_slice_analyze.analyze(xml, staff_indices=[i], tempo_map=tempo_map) for i in range(0, 6)]
 
     salami_slice_analyze.write_general_report("Full piece", output_general, "w", results[0], results[0].lower_bound,
                                    results[0].upper_bound)
@@ -86,21 +88,21 @@ def make_charts_general(results, path):
     :param path: The file path
     :return:
     """
-    chart.chart_cardinality(results, False, "Chord Cardinality Graph for Unsuk Chin’s \"In C\"",
+    chart.chart_cardinality(results, False, "Chord Cardinality Graph for Unsuk Chin\u2019s \u201cIn C\u201d",
                             size=(6.5, 3), path=f"{path}\\card_m")
-    chart.chart_cardinality(results, True, "Chord Cardinality Graph for Unsuk Chin’s \"In C\"",
+    chart.chart_cardinality(results, True, "Chord Cardinality Graph for Unsuk Chin\u2019s \u201cIn C\u201d",
                             size=(6.5, 3), path=f"{path}\\card_t")
-    chart.chart_pitch_onset(results, False, "Pitch Onsets in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_onset(results, False, "Pitch Onsets in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\onset_measure")
-    chart.chart_chord_spacing_index(results, False, "Chord Spacing Indices in Unsuk Chin’s \"In C\"",
+    chart.chart_chord_spacing_index(results, False, "Chord Spacing Indices in Unsuk Chin\u2019s \u201cIn C\u201d",
                                    (6.5, 3), f"{path}\\chord_spacing_index_m")
-    chart.chart_chord_spacing_index(results, True, "Chord Spacing Indices in Unsuk Chin’s \"In C\"",
+    chart.chart_chord_spacing_index(results, True, "Chord Spacing Indices in Unsuk Chin\u2019s \u201cIn C\u201d",
                                    (6.5, 3), f"{path}\\chord_spacing_index_t")
-    chart.chart_pitch_onset(results, True, "Pitch Onsets in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_onset(results, True, "Pitch Onsets in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\onset_time")
-    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                                f"{path}\\pitch_duration")
-    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\pc_duration")
                             
 
@@ -111,17 +113,17 @@ def make_charts_specific(results, path):
     :param path: The file path
     :return:
     """
-    chart.chart_cardinality(results, False, "Pset Cardinality Graph for Unsuk Chin’s \"In C\"",
+    chart.chart_cardinality(results, False, "Pset Cardinality Graph for Unsuk Chin\u2019s \u201cIn C\u201d",
                             size=(6.5, 3), path=f"{path}\\card_m")
-    chart.chart_cardinality(results, True, "Pset Cardinality Graph for Unsuk Chin’s \"In C\"",
+    chart.chart_cardinality(results, True, "Pset Cardinality Graph for Unsuk Chin\u2019s \u201cIn C\u201d",
                             size=(6.5, 3), path=f"{path}\\card_t")
-    chart.chart_pitch_onset(results, False, "Pitch Onsets in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_onset(results, False, "Pitch Onsets in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\onset_measure")
-    chart.chart_pitch_onset(results, True, "Pitch Onsets in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_onset(results, True, "Pitch Onsets in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\onset_time")
-    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pitch_duration(results, "Pitch Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                                f"{path}\\pitch_duration")
-    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin’s \"In C\"", (6.5, 3),
+    chart.chart_pc_duration(results, "Pitch-Class Duration in Unsuk Chin\u2019s \u201cIn C\u201d", (6.5, 3),
                             f"{path}\\pc_duration")
     
 
