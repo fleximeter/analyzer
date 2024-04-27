@@ -31,15 +31,17 @@ from pctheory import pitch, pcset
 from decimal import Decimal
 
 
-def analyze(input_xml, first=-1, last=-1, use_local=False, staff_indices=None):
+def analyze(input_xml, starting_measure_num=None, ending_measure_num=None, use_local=False, staff_indices=None, tempo_map=None):
     """
     Performs a vertical analysis on the given stream and writes a report to CSV
     :param input_xml: The musicxml file to analyze
-    :param first: The first measure to analyze
-    :param last: The last measure to analyze
+    :param starting_measure_num: The first measure to analyze
+    :param ending_measure_num: The last measure to analyze
     :param use_local: Whether or not to use local bounds for register analysis
     :param staff_indices: Whether to only analyze some of the staves or analyze 
     the whole score (a value of None means to analyze the whole score)
+    :param tempo_map: A map of tempos to use to override the tempos in the score. If None, tempos will 
+    be read from the score. The map should be structured with measures as keys, and tempos as values.
     :return: A Results object containing the results of the analysis
     """
     stream = music21.converter.parse(input_xml)
@@ -58,16 +60,16 @@ def analyze(input_xml, first=-1, last=-1, use_local=False, staff_indices=None):
             if type(item) == music21.stream.Part or type(item) == music21.stream.PartStaff:
                 parts.append(item)
     
-    results = slice_parts(parts, get_slice_num(parts), [], [use_local], first, last)
+    results = slice_parts(parts, get_slice_num(parts), [], [use_local], starting_measure_num, ending_measure_num, tempo_map)
     return results
 
 
-def analyze_corpus(name, first=-1, last=-1, use_local=False):
+def analyze_corpus(name, starting_measure_num=None, ending_measure_num=None, use_local=False):
     """
     Performs a vertical analysis on the given stream and writes a report to CSV
     :param name: The musicxml file in the music21 corpus to analyze
-    :param first: The first measure to analyze
-    :param last: The last measure to analyze
+    :param starting_measure_num: The first measure to analyze
+    :param ending_measure_num: The last measure to analyze
     :param use_local: Whether or not to use local bounds for register analysis
     :return: A Results object containing the results of the analysis
     """
@@ -76,16 +78,18 @@ def analyze_corpus(name, first=-1, last=-1, use_local=False):
     for item in stream:
         if type(item) == music21.stream.Part or type(item) == music21.stream.PartStaff:
             parts.append(item)
-    results = slice_parts(parts, get_slice_num(parts), [], [use_local], first, last)
+    results = slice_parts(parts, get_slice_num(parts), [], [use_local], starting_measure_num, ending_measure_num)
     return results[0]
 
 
-def analyze_with_sections(input_xml, section_divisions, use_local):
+def analyze_with_sections(input_xml, section_divisions, use_local, starting_measure_num=None, ending_measure_num=None, tempo_map=None):
     """
     Performs a vertical analysis on the given stream and writes a report to CSV
     :param input_xml: The musicxml file to analyze
     :param section_divisions: A list of section divisions
     :param use_local: Whether or not to use local bounds for register analysis
+    :param tempo_map: A map of tempos to use to override the tempos in the score. If None, tempos will 
+    be read from the score. The map should be structured with measures as keys, and tempos as values.
     :return: A list of Results objects containing the results of the analysis.
     Index 0 is a complete analysis, and the remaining indices are section analyses
     in the order in which they were provided.
@@ -95,7 +99,7 @@ def analyze_with_sections(input_xml, section_divisions, use_local):
     for item in stream:
         if type(item) == music21.stream.Part or type(item) == music21.stream.PartStaff:
             parts.append(item)
-    return slice_parts(parts, get_slice_num(parts), section_divisions, use_local, -1, -1)
+    return slice_parts(parts, get_slice_num(parts), section_divisions, use_local, starting_measure_num, ending_measure_num, tempo_map=tempo_map)
 
 
 def clean_slices(slices, match_tempo=False, sections=None):
@@ -297,7 +301,7 @@ def set_slice_bounds(slices, bounds):
 
 
 #done
-def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
+def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=None, ending_measure_num=None, tempo_map=None):
     """
     Takes n vertical slices of each beat from each of the parts. Note that beats are always quarter notes
     in music21. The parts do not need to have the same time signature for each measure: each slice is taken
@@ -308,20 +312,28 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
     :param n: The number of slices per quarter note
     :param section_divisions: A list of section divisions
     :param use_local: Whether or not to use local bounds for register analysis
-    :param first: The first measure to analyze (-1 means start at the beginning)
-    :param last: The last measure to analyze (-1 means analyze to the end)
+    :param starting_measure_num: The first measure to analyze (None means start at the beginning)
+    :param ending_measure_num: The last measure to analyze (None means analyze to the end)
+    :param tempo_map: A map of tempos to use to override the tempos in the score. If None, tempos will 
+    be read from the score. The map should be structured with measures as keys, and tempos as values.
     :return: A list of v_slices
     """
 
     sc = pcset.SetClass()  # A set-class for calculating names, etc.
     final_slices = []      # Holds the finalized slices to return
-    first_measure = -1     # We assume that the first measure is -1
-    last_measure = -1      # We assume that the last measure is -1
-    next_indices = [0 for i in range(len(parts))]  # The index of the next measure, for each part
-    next_measure = -1      # The number of the next measure
+    first_measure_num_analyzed = -1     # We assume that the first measure is -1
+    last_measure_num_analyzed = -1      # We assume that the last measure is -1
+    current_measure_indices = [0 for i in range(len(parts))]  # The index of the next measure, for each part
+    current_measure_num = -1      # The number of the next measure
     tempo = Decimal(60)    # We assume a tempo of 60 to begin
     time_signature = None  # The current time signature
     transpose = [0 for i in range(len(parts))]  # The amount by which to transpose, for each part
+
+    # Adjust starting and ending measure numbers
+    if starting_measure_num is None:
+        starting_measure_num = -1
+    if ending_measure_num is None:
+        ending_measure_num = -1
 
     if len(parts) == 0:
         print("No parts were provided")
@@ -329,69 +341,57 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
     else:
         # Determine the index of the first measure in each part. a is the part index,
         # and b is the index of the item inside the current part (which may or may not be a measure)
-        for a in range(len(parts)):
-            found_first = False
-            for b in range(len(parts[a])):
-                if type(parts[a][b]) == music21.stream.Measure:
-                    if parts[a][b].number >= first:
-                        next_measure = parts[a][b].number
-                        first_measure = next_measure
-                        next_indices[a] = b
-                        found_first = True
+        for part_idx, part in enumerate(parts):
+            found_first_measure = False
+            for item_idx, item in enumerate(part):
+                if type(item) == music21.stream.Measure:
+                    if item.number >= starting_measure_num:
+                        current_measure_num = item.number
+                        first_measure_num_analyzed = current_measure_num
+                        current_measure_indices[part_idx] = item_idx
+                        found_first_measure = True
                 # No need to continue after the first measure was found
-                if found_first:
+                if found_first_measure:
                     break
 
         # We consider each measure separately. When we have finished the last measure,
         # the next_measure will reset to -1 and we will stop.
-        while next_measure != -1:
-            last_measure = next_measure
+        while current_measure_num != -1:
+            last_measure_num_analyzed = current_measure_num
             # The slices taken for this measure
             measure_slices = []
 
             # Consider each part separately for this measure
-            for a in range(len(parts)):
+            for part_idx, part in enumerate(parts):
                 # Tracks the number of slices taken for the current part in the current measure
                 num_slices_taken = 0
-
-                # Hack for Chin piece
-                if parts[a][next_indices[a]].number == 1:
-                    tempo = Decimal(80)
-                if parts[a][next_indices[a]].number == 26:
-                    tempo = Decimal(108)
                 
-                for item in parts[a][next_indices[a]]:
+                for item in part[current_measure_indices[part_idx]]:
                     last_item_was_voice = False
                     furthest_voice_slice = 0
 
                     # MusicXML doesn't handle transposition properly for 8va and 8vb clefs, so we need manual
                     # transposition. Record for the future.
                     if type(item) == music21.clef.Bass8vaClef or type(item) == music21.clef.Treble8vaClef:
-                        transpose[a] = 12
+                        transpose[part_idx] = 12
                     elif type(item) == music21.clef.Bass8vbClef or type(item) == music21.clef.Treble8vbClef:
-                        transpose[a] = -12
+                        transpose[part_idx] = -12
                     elif isinstance(item, music21.clef.Clef):
-                        transpose[a] = 0
+                        transpose[part_idx] = 0
 
                     # Record the current time signature
                     if type(item) == music21.meter.TimeSignature:
                         time_signature = item
 
                     # Update the tempo if we find a new one
-                    if type(item) == music21.tempo.MetronomeMark:
+                    # If a tempo map was provided, we check to see if the tempo changes in this measure
+                    if tempo_map is not None:
+                        if current_measure_num in tempo_map:
+                            tempo = tempo_map[current_measure_num]
+                    # If there was no tempo map, we check to see if an updated tempo exists in this measure
+                    elif type(item) == music21.tempo.MetronomeMark:
                         if item.number is not None:
                             tempo = Decimal(item.number)
-
-                        # # Specific adjustments for Carter 5
-                        # if parts[a][next_indices[a]].number == 46:
-                        #     tempo = Decimal(512) / Decimal(7)
-                        # elif parts[a][next_indices[a]].number == 66:
-                        #     tempo = Decimal(384) / Decimal(7)
-                        # elif parts[a][next_indices[a]].number == 128:
-                        #     tempo = Decimal(1152) / Decimal(10)
-                        # print(f"Tempo: {tempo}, Measure {parts[a][next_indices[a]].number}")
-                        # deprecated:
-                        # tempo_multiplier = 10 ** str(tempo)[::-1].find(".")
 
                     # If we have found multiple voices in the same part in the same measure
                     if type(item) == music21.stream.Voice:
@@ -418,17 +418,17 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
                                 if type(item2) != music21.note.Rest:
                                     for p in item2.pitches:
                                         name = p.name
-                                        octave = p.octave + (transpose[a] // 12)
-                                        pitches_in_item.append(p.midi - 60 + transpose[a])
+                                        octave = p.octave + (transpose[part_idx] // 12)
+                                        pitches_in_item.append(p.midi - 60 + transpose[part_idx])
                                         p_names_in_item.append(name + str(octave))
 
                                 # Perform slicing. num_slices is the number of slices we take for the current object.
                                 for j in range(num_slices):
                                     if num_slices_taken >= len(measure_slices):
                                         measure_slices.append(
-                                            SalamiSlice(tempo, Fraction(1, n.numerator), parts[a][next_indices[a]].number,
+                                            SalamiSlice(tempo, Fraction(1, n.numerator), parts[part_idx][current_measure_indices[part_idx]].number,
                                                    len(parts)))
-                                    measure_slices[num_slices_taken].add_pitches(pitches_in_item, p_names_in_item, a)
+                                    measure_slices[num_slices_taken].add_pitches(pitches_in_item, p_names_in_item, part_idx)
                                     measure_slices[num_slices_taken].time_signature = time_signature
                                     measure_slices[num_slices_taken].start_position = Fraction(num_slices_taken,
                                                                                                n.numerator)
@@ -463,17 +463,17 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
                         if type(item) != music21.note.Rest:
                             for p in item.pitches:
                                 name = p.name
-                                octave = p.octave + (transpose[a] // 12)
-                                pitches_in_item.append(p.midi - 60 + transpose[a])
+                                octave = p.octave + (transpose[part_idx] // 12)
+                                pitches_in_item.append(p.midi - 60 + transpose[part_idx])
                                 p_names_in_item.append(name + str(octave))
 
                         # Perform slicing. num_slices is the number of slices we take for the current object.
                         for j in range(num_slices):
                             if num_slices_taken >= len(measure_slices):
                                 measure_slices.append(
-                                    SalamiSlice(tempo, Fraction(1, n.numerator), parts[a][next_indices[a]].number,
+                                    SalamiSlice(tempo, Fraction(1, n.numerator), parts[part_idx][current_measure_indices[part_idx]].number,
                                            len(parts)))
-                            measure_slices[num_slices_taken].add_pitches(pitches_in_item, p_names_in_item, a)
+                            measure_slices[num_slices_taken].add_pitches(pitches_in_item, p_names_in_item, part_idx)
                             measure_slices[num_slices_taken].time_signature = time_signature
                             measure_slices[num_slices_taken].start_position = Fraction(num_slices_taken,
                                                                                        n.numerator)
@@ -485,22 +485,22 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
                 final_slices.append(item)
 
             # Find the next measure for each part
-            for a in range(len(parts)):  # a is the part index
+            for part_idx in range(len(parts)):  # a is the part index
                 found_next = False
-                next_measure = -1
+                current_measure_num = -1
                 # We start at the item after the current measure
-                for b in range(next_indices[a] + 1, len(parts[a])):
-                    if type(parts[a][b]) == music21.stream.Measure:
-                        next_measure = parts[a][b].number
-                        next_indices[a] = b
+                for item_idx in range(current_measure_indices[part_idx] + 1, len(parts[part_idx])):
+                    if type(parts[part_idx][item_idx]) == music21.stream.Measure:
+                        current_measure_num = parts[part_idx][item_idx].number
+                        current_measure_indices[part_idx] = item_idx
                         found_next = True
                     # No need to continue after the first measure was found
                     if found_next:
                         break
 
             # If we've analyzed the last measure, it's time to stop analyzing
-            if next_measure > last > -1:
-                next_measure = -1
+            if current_measure_num > ending_measure_num > -1:
+                current_measure_num = -1
 
     results = []
     global_bounds = get_piece_bounds(parts)
@@ -542,7 +542,7 @@ def slice_parts(parts, n, section_divisions, use_local, first=-1, last=-1):
     set_slice_bounds(final_slices, bounds)
     for f_slice in final_slices:
         f_slice.run_calculations_burt()
-    results.insert(0, Results(final_slices, first_measure, last_measure, len(parts)))
+    results.insert(0, Results(final_slices, first_measure_num_analyzed, last_measure_num_analyzed, len(parts)))
     return results
 
 

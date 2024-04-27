@@ -23,6 +23,7 @@ import salami_slice_analyze
 import staff_analyze
 import chart
 import time
+from decimal import Decimal
 
 
 def c_analyze():
@@ -46,8 +47,8 @@ def c_analyze():
     print("Analyzing entire piece...")
     results = None
 
-    results = salami_slice_analyze.analyze(xml)
-    results_staff = [salami_slice_analyze.analyze(xml, staff_indices=[i]) for i in range(0, 6)]
+    results = salami_slice_analyze.analyze(xml, tempo_map={1: Decimal(80), 26: Decimal(108)})
+    results_staff = [salami_slice_analyze.analyze(xml, staff_indices=[i], tempo_map={1: Decimal(80), 26: Decimal(108)}) for i in range(0, 6)]
 
     salami_slice_analyze.write_general_report("Full piece", output_general, "w", results[0], results[0].lower_bound,
                                    results[0].upper_bound)

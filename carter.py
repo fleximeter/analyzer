@@ -26,22 +26,12 @@ from fractions import Fraction
 import os
 
 
-def c_analyze():
-    """
-    Analyzes Carter's fifth string quartet without analyzing each section separately
-    """
-    xml = r"D:\carter_paper\xml\Carter String Quartet 5 - Full score - 01 Introduction.xml"
-    output = r"D:\carter_paper\register_analysis_files\results_carter.xlsx"
-    start = time.time()
-    salami_slice_analyze.analyze(xml, output)
-    finish = time.time() - start
-    print(int(finish / 60), "minutes,", round(finish % 60, 3), "seconds")
-
-
 def c_analyze_with_sections():
     """
     Analyzes Carter's fifth string quartet, as well as analyzing each section separately
     """
+    tempo_map = {24: 96, 25: 64, 45: Fraction(512, 7), 65: Fraction(384, 7), 71: 96, 77: 60, 123: 48, 127: 57.6, 174: 72, 231: 108, 238: 72, 241: 48, 282: 96, 308: 60}
+
     # Sections
     measure_nos = [
         (1, 24), (25, 64), (65, 85), (86, 110), (111, 132), (133, 164), (165, 192), (193, 222), (223, 250),
@@ -64,7 +54,7 @@ def c_analyze_with_sections():
 
     # Path names
     path = "D:\\carter_paper\\"
-    xml = os.path.join(path, "xml\\Carter String Quartet 5 - Full score - 01 Introduction.xml")
+    xml = os.path.join(path, "xml\\Carter String Quartet 5 v2 - Full score - 01 Introduction.musicxml")
     output = os.path.join(path, "register_analysis_files\\entire_piece.xlsx")
     output_general = os.path.join(path, "register_analysis_files\\statistics.xlsx")
     results_path = os.path.join(path, "register_analysis_files\\data.json")
@@ -100,7 +90,7 @@ def c_analyze_with_sections():
     if use_cache:
         results = salami_slice_analyze.read_analysis_from_file(results_path)
     else:
-        results = salami_slice_analyze.analyze_with_sections(xml, sections, bound_prefs)
+        results = salami_slice_analyze.analyze_with_sections(xml, sections, bound_prefs, tempo_map=tempo_map)
         salami_slice_analyze.write_analysis_to_file(results, results_path)
 
     salami_slice_analyze.write_general_report("Full piece", output_general, "w", results[0], results[0].lower_bound,
