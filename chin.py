@@ -80,6 +80,17 @@ def c_analyze():
                           "IOI Voice Graph for Unsuk Chin\u2019s \u201cIn C\u201d (Voices 2, 4)", (10, 6), os.path.join(path, "analysis", "graphs", "ioi_voice_graph_24"))
     staff_analyze.write_analysis_to_file(os.path.join(path, "analysis", "ioi.xlsx"), ioi_analysis)
     
+    # Find 2:1 relationships
+    print("2-1 Relationships")
+    for j, voice in enumerate(ioi_analysis):
+        two_one = 0
+        for i, note in enumerate(voice):
+            if i > 0 and not note["isRest"]:
+                if not voice[i-1]["isRest"]:
+                    if voice[i-1]["quarterLength"] == 2 * note["quarterLength"]:
+                        two_one += 1
+        print(f"Voice {j+1}: {two_one}")
+    
     # Print elapsed time
     finish = time.time() - start
     print(f"\nTotal elapsed time: {int(finish / 60)} minutes, {round(finish % 60, 3)} seconds")
