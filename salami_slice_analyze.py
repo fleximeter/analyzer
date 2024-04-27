@@ -385,15 +385,21 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
 
                     # Update the tempo if we find a new one
                     # If a tempo map was provided, we check to see if the tempo changes in this measure
+                    # If there was no tempo map, we check to see if an updated tempo exists in this measure
                     if tempo_map is not None:
                         if current_measure_num in tempo_map:
-                            tempo = tempo_map[current_measure_num]
-                    # If there was no tempo map, we check to see if an updated tempo exists in this measure
+                            if type(tempo_map[current_measure_num]) == Fraction:
+                                tempo = Decimal(tempo_map[current_measure_num].numerator) / Decimal(tempo_map[current_measure_num].denominator)
+                            elif type(tempo_map[current_measure_num]) == Decimal:
+                                tempo = tempo_map[current_measure_num]
+                            else:
+                                tempo = Decimal(tempo_map[current_measure_num])
                     elif type(item) == music21.tempo.MetronomeMark:
                         if item.number is not None:
                             tempo = Decimal(item.number)
 
-                    # If we have found multiple voices in the same part in the same measure
+                    # If we have found multiple voices in the same part in the same measure, we need to
+                    # deal with each voice as a separate part.
                     if type(item) == music21.stream.Voice:
                         last_item_was_voice = True
 
@@ -408,9 +414,11 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
                                 if type(item2.duration.quarterLength) != Fraction:
                                     ql = Fraction(item2.duration.quarterLength)
 
+                                # How many salami slices to take
                                 num_slices = int(ql * n)
-                                # the pitches are considered as integers in p-space. The p_names hold pitch names
-                                # which is often more convenient for humans.
+                                
+                                # the pitches are considered as integers in p-space. 
+                                # p_names_in_item hold pitch names which is often more convenient for humans.
                                 pitches_in_item = []
                                 p_names_in_item = []
 
@@ -422,7 +430,7 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
                                         pitches_in_item.append(p.midi - 60 + transpose[part_idx])
                                         p_names_in_item.append(name + str(octave))
 
-                                # Perform slicing. num_slices is the number of slices we take for the current object.
+                                # Perform salami slicing. num_slices is the number of slices we take for the current object.
                                 for j in range(num_slices):
                                     if num_slices_taken >= len(measure_slices):
                                         measure_slices.append(
@@ -445,17 +453,19 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
                     elif last_item_was_voice and num_slices_taken < furthest_voice_slice:
                         num_slices_taken = furthest_voice_slice
 
-                    # We can only take slices of notes, rests, or chords
+                    # We can only take slices of notes, rests, or chords. We cannot take slices of voices here;
+                    # they are dealt with above.
                     if type(item) == music21.note.Note or type(item) == music21.note.Rest or type(
                             item) == music21.chord.Chord:
                         ql = item.duration.quarterLength
                         if type(item.duration.quarterLength) != Fraction:
                             ql = Fraction(item.duration.quarterLength)
 
+                        # How many salami slices to take
                         num_slices = int(ql * n)
 
-                        # the pitches are considered as integers in p-space. The p_objects hold pitch names which
-                        # is often more convenient for humans.
+                        # the pitches are considered as integers in p-space. 
+                        # p_names_in_item holds pitch names which is often more convenient for humans.
                         pitches_in_item = []
                         p_names_in_item = []
 
@@ -467,7 +477,7 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
                                 pitches_in_item.append(p.midi - 60 + transpose[part_idx])
                                 p_names_in_item.append(name + str(octave))
 
-                        # Perform slicing. num_slices is the number of slices we take for the current object.
+                        # Perform salami slicing. num_slices is the number of slices we take for the current object.
                         for j in range(num_slices):
                             if num_slices_taken >= len(measure_slices):
                                 measure_slices.append(
@@ -548,7 +558,7 @@ def slice_parts(parts, n, section_divisions, use_local, starting_measure_num=Non
 
 def read_analysis_from_file(path):
     """
-    Reads analysis data from a file
+    Reads analysis data from a JSON file
     :param path: The file path
     :return: A list of Results objects
     """
@@ -679,9 +689,9 @@ def read_analysis_from_file(path):
 
 def write_analysis_to_file(results, path):
     """
-    Writes an analysis to file
+    Writes an analysis to a JSON file
     :param results: A Results object
-    :param path: A path
+    :param path: A path for a JSON file
     :return:
     """
     data = []
@@ -797,7 +807,7 @@ def write_analysis_to_file(results, path):
 
 def write_general_report(section_name, file, file_command, results, lowest_pitch, highest_pitch):
     """
-    Writes a general report to CSV
+    Writes a general report to Excel
     :param section_name: The name of the section being reported
     :param file: The file path
     :param file_command: The command ("w" or "a")
@@ -941,7 +951,7 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
 
 def write_statistics(file, headings, dictionaries):
     """
-    Writes a dictionary to file
+    Writes a dictionary to Excel
     :param file: A file name
     :param headings: A headings row for the file
     :param dictionaries: Dictionaries with common keys to write to file

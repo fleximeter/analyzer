@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import salami_slice_analyze
 import chart
 import time
-from fractions import Fraction
+from decimal import Decimal
 import os
 
 
@@ -30,7 +30,26 @@ def c_analyze_with_sections():
     """
     Analyzes Carter's fifth string quartet, as well as analyzing each section separately
     """
-    tempo_map = {24: 96, 25: 64, 45: Fraction(512, 7), 65: Fraction(384, 7), 71: 96, 77: 60, 123: 48, 127: 57.6, 174: 72, 231: 108, 238: 72, 241: 48, 282: 96, 308: 60}
+    tempo_map = {
+        1: 72,
+        25: 96,
+        26: 64,
+        46: Decimal(512) / Decimal(7),
+        66: Decimal(384) / Decimal(7),
+        72: 96,
+        78: 60,
+        86: 60,
+        124: 48, 
+        128: 57.6 * 2, 
+        175: 72, 
+        193: 72, 
+        232: 108, 
+        239: 72, 
+        242: 48, 
+        251: 48, 
+        283: 96, 
+        309: 60
+    }
 
     # Sections
     measure_nos = [
@@ -127,16 +146,6 @@ def c_analyze_with_sections():
 
     for i in range(1, 13):
         make_charts_sections(results, i, path, voices, section_names)
-
-    # for i in range(results[0].lower_bound, results[0].upper_bound + 1):
-    #     total = Decimal(0)
-    #     parts = Decimal(0)
-    #     if i in results[0].pitch_duration:
-    #         total = results[0].pitch_duration[i]
-    #     for j in range(4):
-    #         if i in results[0].pitch_duration_voices[j]:
-    #             parts += results[0].pitch_duration_voices[j][i]
-    #     print(f"{i}: {total - parts}")
 
     # Print elapsed time
     finish = time.time() - start
@@ -290,33 +299,8 @@ def make_charts_sections(results, i, path, voices, section_names):
                                             f"{section_names[i - 1]}", path=f"{dpc_path}_{voices[j]}", voice=j)
 
 
-def metric_modulation():
-    # Carter Quartet 5
-    m = {}
-
-    # q = 72
-    m[24] = Fraction(Fraction(3, 4), 1)  # q = 96
-    m[25] = Fraction(Fraction(1, 4), Fraction(1, 6))  # q = 64
-    m[45] = Fraction(Fraction(1, 8), Fraction(1, 7))  # q = 73+ (512/7)
-    m[65] = Fraction(Fraction(4, 3), 1)  # q = 55- (384/7)
-    m[71] = Fraction(Fraction(4, 7), 1)  # q = 96
-    m[77] = Fraction(Fraction(8, 5), 1)  # q = 60
-    m[123] = Fraction(Fraction(5, 4), 1)  # q = 48
-    m[127] = Fraction(Fraction(Fraction(5, 2), 3), 2)  # h = 57.6
-    m[174] = Fraction(Fraction(8, 5), 1)  # q = 72
-    m[231] = Fraction(Fraction(2, 3), 1)  # q = 108
-    m[238] = Fraction(Fraction(3, 2), 1)  # q = 72
-    m[241] = Fraction(Fraction(3, 4), Fraction(1, 2))  # q = 48
-    m[282] = Fraction(Fraction(1, 2), 1)  # q = 96
-    m[308] = Fraction(Fraction(4, 5), Fraction(1, 2))  # q = 60
-
-    for i in m:
-        print(i, m[i])
-
-
 if __name__ == "__main__":
     print("################### Salami Slice Analyzer ####################\n" + \
           "Copyright (c) 2024 by Jeffrey Martin. All rights reserved.\nhttps://www.jeffreymartincomposer.com\n")
     c_analyze_with_sections()
     # c_analyze_reduction()
-    # metric_modulation()
