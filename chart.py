@@ -155,14 +155,14 @@ def chart_voice_ioi(ioi_analysis, voice_names=None, colors=None, title="IOI Char
         ioi = []
         x = []
         if len(voice) > 0:
-            position_time = voice[0]["startTime"]
+            position_time = voice[0].start_time
         for note in voice:
-            if note["isRest"]:
-                position_time += note["duration"]
+            if note.is_rest:
+                position_time += note.duration
             else:
                 x.append(position_time / 60)
-                position_time += note["duration"]
-                ioi.append(note["ioi"])
+                position_time += note.duration
+                ioi.append(note.ioi)
         if voice_names is not None:
             label = voice_names[i]
         else:
