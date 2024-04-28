@@ -25,11 +25,58 @@ import music21
 import pandas as pd
 
 
-def find_rhythm_succession(ioi_analysis, succession):
+def find_duration_successsion(ioi_analysis, succession, include_rests=False):
     """
-    Finds a rhythm succession in an IOI analysis
+    Finds a rhythm duration succession in an IOI analysis (such as (1/2, 1/4, 1/3, 2)).
+    These are hard quarter lengths. They require specific note values and do not flag 
+    augmentation and diminution.
+    
+    The algorithm records the measure numbers in which these successions start for each voice.
+    If a succession starts multiple times in the same measure, the measure will be recorded
+    multiple times. The results are returned in a dictionary, with separate counts for each staff.
+
     :param ioi_analysis: The IOI analysis
-    :return: A count of rhythm successions
+    :param succession: A tuple or list of numbers. It is best to use integers or the Fraction type.
+    :param include_rests: Whether or not to count rests as part of the duration succession
+    :return: A dictionary of rhythm successions
+    """
+    voice_dict = {}
+    for v, voice in enumerate(ioi_analysis):
+        counter = 0
+        measures = []
+        for i in range(len(voice) - len(succession) + 1):
+            succession_found = True
+            for j in range(0, len(succession)):
+                # If the current note is a rest, the succession is invalid
+                if voice[i+j]["isRest"] and not include_rests:
+                    succession_found = False
+                    break
+                # If the current ratio is wrong, the succession is invalid
+                elif voice[i+j]["quarterLength"] != succession[j]:
+                    succession_found = False
+                    break
+            if succession_found:
+                counter += 1
+                measures.append(voice[i]["measureNumber"])
+        voice_dict[f"voice_{v+1}"] = {"num": counter, "measures_start": measures}
+    return voice_dict
+
+
+def find_rhythm_ratio_successsion(ioi_analysis, succession, include_rests=False):
+    """
+    Finds a rhythm ratio succession in an IOI analysis (such as (2, 1, 3, 1, 2, 1)).
+    The ratios are simply ratios of duration. They do not require specific note values,
+    For example, the succession given could be realized as half, quarter, dotted half, etc.
+    or as quarter, eighth, dotted quarter, etc. Both would be flagged using this algorithm.
+
+    The algorithm records the measure numbers in which these successions start for each voice.
+    If a succession starts multiple times in the same measure, the measure will be recorded
+    multiple times. The results are returned in a dictionary, with separate counts for each staff.
+
+    :param ioi_analysis: The IOI analysis
+    :param succession: A tuple or list of numbers. It is best to use integers or the Fraction type.
+    :param include_rests: Whether or not to count rests as part of the rhythm ratio succession
+    :return: A dictionary of rhythm ratio successions
     """
     voice_dict = {}
     for v, voice in enumerate(ioi_analysis):
@@ -39,12 +86,12 @@ def find_rhythm_succession(ioi_analysis, succession):
             succession_found = True
 
             # If the current note is a rest, the succession is invalid
-            if voice[i]["isRest"]:
+            if voice[i]["isRest"] and not include_rests:
                 succession_found = False
             else:
                 for j in range(1, len(succession)):
                     # If the current note is a rest, the succession is invalid
-                    if voice[i+j]["isRest"]:
+                    if voice[i+j]["isRest"] and not include_rests:
                         succession_found = False
                         break
                     # If the current ratio is wrong, the succession is invalid

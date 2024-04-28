@@ -24,6 +24,7 @@ import rhythm_analyze
 import chart
 import time
 import os
+from fractions import Fraction
 
 
 def c_analyze():
@@ -83,11 +84,21 @@ def c_analyze():
     
     # Find relationships
     print("2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1)))
+    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1)))
     print("2-1-2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1, 2, 1)))
+    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1)))
     print("2-1-2-1-2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1, 2, 1, 2, 1)))
+    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1, 2, 1)))
+    print("2-1-2-1-2-1-2-1 Relationships")
+    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1, 2, 1, 2, 1)))
+    print("e-s Relationships")
+    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4))))
+    print("e-s-e-s Relationships")
+    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
+    print("e-s-e-s-e-s Relationships")
+    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
+    print("e-s-e-s-e-s-e-s Relationships")
+    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
     
     # Print elapsed time
     finish = time.time() - start
