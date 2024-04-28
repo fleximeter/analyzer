@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from pctheory import cseg, pitch
+from pctheory import contour, pitch
 from decimal import Decimal
 import numpy as np
 
@@ -561,7 +561,7 @@ class SalamiSlice:
             self._ipseg.clear()
         for i in range(1, len(self._pseg)):
             self._ipseg.append(self._pseg[i].p - self._pseg[i - 1].p)
-        self._chord_spacing_contour = cseg.simplify([ip for ip in self._ipseg])
+        self._chord_spacing_contour = contour.simplify([ip for ip in self._ipseg])
 
         # Calculate values
         self._pset_cardinality = len(self._pset)
