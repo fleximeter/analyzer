@@ -53,7 +53,7 @@ def find_rhythm_succession(ioi_analysis, succession):
                         break
             if succession_found:
                 counter += 1
-                measures += voice[i]["measureNumber"]
+                measures.append(voice[i]["measureNumber"])
         voice_dict[f"voice_{v+1}"] = {"num": counter, "measures_start": measures}
     return voice_dict
 

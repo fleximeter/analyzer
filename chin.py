@@ -38,6 +38,7 @@ def c_analyze():
     path_laptop = "C:\\Users\\jeffr\\chin_paper\\"
     # path = path_laptop
     xml = os.path.join(path, "chin_etude_1_6staff.musicxml")
+    xml_no_grace_notes = os.path.join(path, "chin_etude_1_6staff_no_grace_notes.musicxml")
     output = os.path.join(path, "analysis\\entire_piece.xlsx")
     output_general = os.path.join(path, "analysis\\statistics.xlsx")
     results_path = os.path.join(path, "analysis\\data.json")
@@ -49,8 +50,8 @@ def c_analyze():
     print("Analyzing entire piece...")
     results = None
     
-    results = salami_slice_analyze.analyze(xml, tempo_map=tempo_map)
-    results_staff = [salami_slice_analyze.analyze(xml, staff_indices=[i], tempo_map=tempo_map) for i in range(0, 6)]
+    results = salami_slice_analyze.analyze(xml_no_grace_notes, tempo_map=tempo_map)
+    results_staff = [salami_slice_analyze.analyze(xml_no_grace_notes, staff_indices=[i], tempo_map=tempo_map) for i in range(0, 6)]
 
     salami_slice_analyze.write_general_report("Full piece", output_general, "w", results[0], results[0].lower_bound,
                                    results[0].upper_bound)
@@ -73,7 +74,7 @@ def c_analyze():
         make_charts_specific(result[0], os.path.join(path, "analysis", f"graphs_staff{i+1}"))
     
     # Perform IOI analysis
-    ioi_analysis = rhythm_analyze.part_ioi_analyzer(xml)
+    ioi_analysis = rhythm_analyze.part_ioi_analyzer(xml_no_grace_notes)
     chart.chart_voice_ioi(ioi_analysis, [f"Voice {i+1}" for i in range(len(ioi_analysis))], ("#0066ff", "#ff9900", "#00cc00", "#ff0000", "#cc66ff", "#cc9900"),
                           "IOI Voice Graph for Unsuk Chin\u2019s \u201cIn C\u201d", (10, 6), os.path.join(path, "analysis", "graphs", "ioi_voice_graph"))
     chart.chart_voice_ioi([ioi_analysis[1], ioi_analysis[3]], (f"Voice 2", "Voice 4"), ("#ff9900", "#ff0000"),
