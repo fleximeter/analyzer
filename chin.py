@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import salami_slice_analyze
-import staff_analyze
+import rhythm_analyze
 import chart
 import time
 import os
@@ -73,23 +73,20 @@ def c_analyze():
         make_charts_specific(result[0], os.path.join(path, "analysis", f"graphs_staff{i+1}"))
     
     # Perform IOI analysis
-    ioi_analysis = staff_analyze.part_ioi_calculator(xml)
+    ioi_analysis = rhythm_analyze.part_ioi_analyzer(xml)
     chart.chart_voice_ioi(ioi_analysis, [f"Voice {i+1}" for i in range(len(ioi_analysis))], ("#0066ff", "#ff9900", "#00cc00", "#ff0000", "#cc66ff", "#cc9900"),
                           "IOI Voice Graph for Unsuk Chin\u2019s \u201cIn C\u201d", (10, 6), os.path.join(path, "analysis", "graphs", "ioi_voice_graph"))
     chart.chart_voice_ioi([ioi_analysis[1], ioi_analysis[3]], (f"Voice 2", "Voice 4"), ("#ff9900", "#ff0000"),
                           "IOI Voice Graph for Unsuk Chin\u2019s \u201cIn C\u201d (Voices 2, 4)", (10, 6), os.path.join(path, "analysis", "graphs", "ioi_voice_graph_24"))
-    staff_analyze.write_analysis_to_file(os.path.join(path, "analysis", "ioi.xlsx"), ioi_analysis)
+    rhythm_analyze.write_ioi_analysis_to_file(os.path.join(path, "analysis", "ioi.xlsx"), ioi_analysis)
     
-    # Find 2:1 relationships
+    # Find relationships
     print("2-1 Relationships")
-    for j, voice in enumerate(ioi_analysis):
-        two_one = 0
-        for i, note in enumerate(voice):
-            if i > 0 and not note["isRest"]:
-                if not voice[i-1]["isRest"]:
-                    if voice[i-1]["quarterLength"] == 2 * note["quarterLength"]:
-                        two_one += 1
-        print(f"Voice {j+1}: {two_one}")
+    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1)))
+    print("2-1-2-1 Relationships")
+    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1, 2, 1)))
+    print("2-1-2-1-2-1 Relationships")
+    print(rhythm_analyze.find_rhythm_succession(ioi_analysis, (2, 1, 2, 1, 2, 1)))
     
     # Print elapsed time
     finish = time.time() - start

@@ -1,8 +1,8 @@
 """
-File: staff_analyze.py
+File: rhythm_analyze.py
 Author: Jeff Martin
 Email: jeffreymartin@outlook.com
-This file contains functions for analyzing individual staves in a score.
+This file contains functions for analyzing rhythm in individual staves in a score.
 Copyright (c) 2024 by Jeff Martin.
 
 This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,45 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
+from fractions import Fraction
 import music21
 import pandas as pd
 
 
-def part_ioi_calculator(score, tempo_list=None):
+def find_rhythm_succession(ioi_analysis, succession):
+    """
+    Finds a rhythm succession in an IOI analysis
+    :param ioi_analysis: The IOI analysis
+    :return: A count of rhythm successions
+    """
+    voice_dict = {}
+    for v, voice in enumerate(ioi_analysis):
+        counter = 0
+        measures = []
+        for i in range(len(voice) - len(succession) + 1):
+            succession_found = True
+
+            # If the current note is a rest, the succession is invalid
+            if voice[i]["isRest"]:
+                succession_found = False
+            else:
+                for j in range(1, len(succession)):
+                    # If the current note is a rest, the succession is invalid
+                    if voice[i+j]["isRest"]:
+                        succession_found = False
+                        break
+                    # If the current ratio is wrong, the succession is invalid
+                    elif voice[i+j]["quarterLength"] != voice[i+j-1]["quarterLength"] * Fraction(succession[j], succession[j-1]):
+                        succession_found = False
+                        break
+            if succession_found:
+                counter += 1
+                measures += voice[i]["measureNumber"]
+        voice_dict[f"voice_{v+1}"] = {"num": counter, "measures_start": measures}
+    return voice_dict
+
+
+def part_ioi_analyzer(score, tempo_list=None):
     """
     Parses a score and gets the individual note, rest, and chord items. Requires that each staff
     not have separate Voice objects.
@@ -118,7 +152,7 @@ def part_ioi_calculator(score, tempo_list=None):
     return staff_collection
 
 
-def write_analysis_to_file(path, staff_collection):
+def write_ioi_analysis_to_file(path, staff_collection):
     """
     Writes the analysis to a file
     :param path: The file path
