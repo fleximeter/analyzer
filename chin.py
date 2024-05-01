@@ -83,22 +83,12 @@ def c_analyze():
     rhythm_analyze.write_ioi_analysis_to_file(os.path.join(path, "analysis", "ioi.xlsx"), ioi_analysis)
     
     # Find relationships
-    print("2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1)))
-    print("2-1-2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1)))
-    print("2-1-2-1-2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1, 2, 1)))
-    print("2-1-2-1-2-1-2-1 Relationships")
-    print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1, 2, 1, 2, 1, 2, 1)))
-    print("e-s Relationships")
-    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4))))
-    print("e-s-e-s Relationships")
-    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
-    print("e-s-e-s-e-s Relationships")
-    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
-    print("e-s-e-s-e-s-e-s Relationships")
-    print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4), Fraction(1, 2), Fraction(1, 4))))
+    for i in range(1, 8):
+        print(f"2-1 *{i} Relationships")
+        print(rhythm_analyze.find_rhythm_ratio_successsion(ioi_analysis, (2, 1) * i))
+        print(f"e-s *{i} Relationships")
+        print(rhythm_analyze.find_duration_successsion(ioi_analysis, (Fraction(1, 2), Fraction(1, 4)) * i))
+        print()
     
     # Print elapsed time
     finish = time.time() - start
