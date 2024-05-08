@@ -61,7 +61,7 @@ def chart_cardinality(results, x_axis_time=False, title="Cardinality Chart", siz
     ax = fig.add_subplot(111)
     ax.step(x, ps_s, color="#555555", linewidth=0.3, markersize=1)
     if title is not None:
-        matplotlib.pyplot.title(title, fontsize=18)
+        matplotlib.pyplot.title(title, fontsize=14)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:
@@ -113,7 +113,7 @@ def chart_chord_spacing_index(results, x_axis_time=False, title="Chord Spacing I
     ax = fig.add_subplot(111)
     ax.step(x, ps_s, color="#555555", linewidth=0.3, markersize=1)
     if title is not None:
-        matplotlib.pyplot.title(title, fontsize=18)
+        matplotlib.pyplot.title(title, fontsize=14)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:
@@ -257,7 +257,7 @@ def chart_pitch_onset(results, x_axis_time=False, title="Pitch Onset Graph", siz
             ytick_labels.append(f"C{i // 12 + 4}/{i}")
     matplotlib.pyplot.yticks(ytick_tick, ytick_labels)
     if title is not None:
-        matplotlib.pyplot.title(title, fontsize=18)
+        matplotlib.pyplot.title(title, fontsize=14)
     if x_axis_time:
         matplotlib.pyplot.xlabel("Time (minutes)")
     else:

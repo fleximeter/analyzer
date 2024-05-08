@@ -584,7 +584,10 @@ def read_analysis_from_file(path):
             cslice._derived_core = bool(dslice["derived_core"])
             cslice._derived_core_associations = dslice["derived_core_associations"]
             cslice._duration = Decimal(dslice["duration"])
-            cslice._ioi_in_seconds = dslice["ioi_in_seconds"]
+            if dslice["ioi_in_seconds"] != "None":
+                cslice._ioi_in_seconds = float(dslice["ioi_in_seconds"])
+            else:
+                cslice._ioi_in_seconds = None
             cslice._ipseg = dslice["ipseg"]
             cslice._measure = dslice["measure"]
             cslice._pset_cardinality = dslice["pset_cardinality"]
