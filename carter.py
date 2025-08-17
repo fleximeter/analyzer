@@ -74,7 +74,7 @@ def c_analyze_with_sections():
 
     # Path names
     path = "D:\\carter_paper\\"
-    xml = os.path.join(path, "xml\\Carter String Quartet 5 v2 - Full score - 01 Introduction.musicxml")
+    xml = os.path.join(path, "xml\\Carter String Quartet 5 (Proofread August 2025) - Full score - 01 Introduction.musicxml")
     output = os.path.join(path, "register_analysis_files\\entire_piece.xlsx")
     output_general = os.path.join(path, "register_analysis_files\\statistics.xlsx")
     results_path = os.path.join(path, "register_analysis_files\\data.json")
@@ -101,7 +101,7 @@ def c_analyze_with_sections():
 
     # Record starting time
     start = time.time()
-    use_cache = True
+    use_cache = False
 
     # Analyze
     print("Analyzing entire piece...")
@@ -205,6 +205,10 @@ def make_charts_general(results, path, voices):
                             size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_m"))
     chart.chart_cardinality(results, True, "Chord Cardinality Graph for Elliott Carter\u2019s Fifth String Quartet",
                             size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_t"))
+    chart.chart_cardinality_with_duplicates(results, False, "Chord Cardinality Graph for Elliott Carter\u2019s Fifth String Quartet",
+                            size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_dup_m"))
+    chart.chart_cardinality_with_duplicates(results, True, "Chord Cardinality Graph for Elliott Carter\u2019s Fifth String Quartet",
+                            size=(6.5, 3), path=os.path.join(path, "register_analysis_files\\graphs\\card_dup_t"))
     chart.chart_pitch_onset(results, False, "Pitch Onsets in Elliott Carter\u2019s Fifth String Quartet", (6.5, 3),
                             os.path.join(path, "register_analysis_files\\graphs\\onset_measure"))
     chart.chart_chord_spacing_index(results, False, "Chord Spacing Indices in Elliott Carter\u2019s Fifth String Quartet",

@@ -75,6 +75,58 @@ def chart_cardinality(results, x_axis_time=False, title="Cardinality Chart", siz
         matplotlib.pyplot.close()
 
 
+def chart_cardinality_with_duplicates(results, x_axis_time=False, title="Cardinality Chart (With Duplicates)", size=(8, 6), path=None):
+    """
+    Makes a step plot of cardinality (with duplicates)
+    :param results: A Results object
+    :param x_axis_time: Whether or not to use time as the x axis (default is measure number)
+    :param title: The title of the plot
+    :param size: The size of the plot
+    :param path: A path to save the chart
+    :return: None
+    """
+    matplotlib.pyplot.clf()
+    matplotlib.pyplot.rcParams["font.family"] = "Academico"
+    ps_s = []
+    x = []
+    position_time = results.start_time
+    for s in results.slices:
+        if x_axis_time:
+            x.append(position_time / 60)
+            position_time += s.duration
+        else:
+            position = s.measure + float(s.start_position / s.time_signature.barDuration.quarterLength)
+            x.append(position)
+        if s.pitch_count_with_duplicates > 0:
+            ps_s.append(s.pitch_count_with_duplicates)
+        else:
+            ps_s.append(0)
+    fig = matplotlib.pyplot.figure(figsize=size, dpi=600)
+    matplotlib.pyplot.rc("font", size=8)
+    matplotlib.pyplot.rc("axes", titlesize=8)
+    matplotlib.pyplot.rc("axes", labelsize=8)
+    matplotlib.pyplot.rc("axes", linewidth=0.5)
+    matplotlib.pyplot.rc("xtick", labelsize=8)
+    matplotlib.pyplot.rc("xtick.major", width=0.5)
+    matplotlib.pyplot.rc("ytick", labelsize=8)
+    matplotlib.pyplot.rc("ytick.major", width=0.5)
+    ax = fig.add_subplot(111)
+    ax.step(x, ps_s, color="#555555", linewidth=0.3, markersize=1)
+    if title is not None:
+        matplotlib.pyplot.title(title, fontsize=14)
+    if x_axis_time:
+        matplotlib.pyplot.xlabel("Time (minutes)")
+    else:
+        matplotlib.pyplot.xlabel("Measure No.")
+    matplotlib.pyplot.ylabel("Chord Cardinality (With Duplicates)")
+    matplotlib.pyplot.tight_layout()
+    if path is None:
+        matplotlib.pyplot.show()
+    else:
+        matplotlib.pyplot.savefig(path)
+        matplotlib.pyplot.close()
+
+
 def chart_chord_spacing_index(results, x_axis_time=False, title="Chord Spacing Index Chart", size=(8, 6), path=None):
     """
     Makes a step plot of chord spacing index

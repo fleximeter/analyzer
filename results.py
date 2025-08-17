@@ -65,6 +65,7 @@ class Results:
         self._pitch_lowest = np.inf
         self._pitch_lowest_voices = None
         self._pset_card_avg = 0
+        self._pitch_count_with_duplicates_avg = 0
         self._pset_duration = None
         self._pset_frequency = None
         self._chord_spacing_index_avg = 0
@@ -367,6 +368,16 @@ class Results:
         :return: The average pset cardinality
         """
         return self._pset_card_avg
+    
+    @property
+    def pitch_count_with_duplicates_avg(self):
+        """
+        The average pitch count with duplicates of the analyzed measures (by duration).
+        Note that this is very similar to `pset_card_avg`, except that this metric includes
+        duplicate pitches in its calculation.
+        :return: The average pitch count with duplicates
+        """
+        return self._pitch_count_with_duplicates_avg
 
     @property
     def chord_spacing_index_avg(self):
@@ -569,6 +580,7 @@ class Results:
                 self._quarter_duration += s.quarter_duration
                 if s.pset_cardinality > 0:
                     self._pset_card_avg += len(s.pset) * s.duration
+                    self._pitch_count_with_duplicates_avg += s.pitch_count_with_duplicates * s.duration
                     self._ioi_avg_in_seconds += s.ioi_in_seconds
                     ioi_count += 1
                     if s.chord_spacing_index is not np.nan:
@@ -687,6 +699,7 @@ class Results:
         # Finalize average calculation
         self._ps_avg /= len(self._slices)
         self._pset_card_avg = float(self._pset_card_avg / self._duration)
+        self._pitch_count_with_duplicates_avg = float(self._pitch_count_with_duplicates_avg / self.duration)
         self._ioi_avg_in_seconds /= ioi_count
         self._duration_avg = self.duration / len(self._slices)
     

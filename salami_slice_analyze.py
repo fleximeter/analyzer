@@ -839,7 +839,8 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
         "duration": [], 
         "duration_avg": [], 
         "ioi_avg": [], 
-        "pset_card_avg": [], 
+        "pset_card_avg": [],
+        "pitch_count_with_duplicate_avg": [],
         "csi_avg": [], 
         "lps": [], 
         "p_u": [], 
@@ -875,6 +876,7 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
     report["duration_avg"].append(float(results.duration_avg))
     report["ioi_avg"].append(float(results.ioi_avg_in_seconds))
     report["pset_card_avg"].append(results.pset_card_avg)
+    report["pitch_count_with_duplicate_avg"].append(results.pitch_count_with_duplicates_avg)
     report["csi_avg"].append(results.chord_spacing_index_avg)
     report["lps"].append(results.lps_card)
     report["p_u"].append(results.pitch_highest)
@@ -923,6 +925,7 @@ def write_general_report(section_name, file, file_command, results, lowest_pitch
         report["duration_avg"].append(None)
         report["ioi_avg"].append(None)
         report["pset_card_avg"].append(None)
+        report["pitch_count_with_duplicate_avg"].append(None)
         report["csi_avg"].append(None)
         report["lps"].append(results.pitch_highest_voices[v] - results.pitch_lowest_voices[v] + 1)
         report["p_u"].append(results.pitch_highest_voices[v])
