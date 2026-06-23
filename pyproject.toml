@@ -1,0 +1,16 @@
+[project]
+name = "analyzer"
+version = "1.0.0"
+dependencies = ["music21", "pctheory", "numpy", "pandas", "matplotlib"]
+requires-python = ">= 3.10"
+authors = [{name = "Jeff Martin", email="jeffreymartin@outlook.com"}]
+maintainers = [{name = "Jeff Martin", email="jeffreymartin@outlook.com"}]
+description = "Tools for computer-assisted music score analysis"
+license = "MIT"
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/analyzer"]

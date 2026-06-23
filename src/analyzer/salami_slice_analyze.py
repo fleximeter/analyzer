@@ -24,8 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import music21
 import pandas as pd
-from salami_slice import SalamiSlice
-from results import Results
+from analyzer.salami_slice import SalamiSlice
+from analyzer.results import Results
 from fractions import Fraction
 from pctheory import pitch, pcset
 from decimal import Decimal
