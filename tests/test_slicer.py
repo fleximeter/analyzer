@@ -163,5 +163,43 @@ class BasicTests(unittest.TestCase):
                 ) / 8
             )
 
+class CarterTests(unittest.TestCase):
+    def test_carter1(self):
+        """
+        Tests measure 310 of Carter V
+        """
+        results = salami_slice_analyze.analyze(Path(__file__).parent / "data/test_carter1.musicxml")
+        slices = results[0].slices
+        self.assertEqual(slices[0].pseg, pseg.make_pseg12(6, 8))
+        self.assertEqual(slices[1].pseg, pseg.make_pseg12(3, 8, 11))
+        self.assertEqual(slices[2].pseg, pseg.make_pseg12(3, 7, 8, 11))
+        self.assertEqual(slices[3].pseg, pseg.make_pseg12(3, 7, 8, 9, 11, 16))
+        self.assertEqual(slices[4].pseg, pseg.make_pseg12(0, 8, 9, 11, 16))
+        self.assertEqual(slices[5].pseg, pseg.make_pseg12(0, 8, 11))
+        self.assertEqual(slices[6].pseg, pseg.make_pseg12(0, 6, 8, 11, 13))
+        self.assertEqual(slices[7].pseg, pseg.make_pseg12(0, 3, 6, 11, 13))
+        self.assertEqual(slices[8].pseg, pseg.make_pseg12(0, 3, 6, 7, 11, 13))
+        self.assertEqual(len(slices), 9)
+
+        self.assertAlmostEqual(slices[0].duration, Decimal(0.5))
+        self.assertAlmostEqual(slices[1].duration, Decimal(0.625))
+        self.assertAlmostEqual(slices[2].duration, Decimal(0.208333333333))
+        self.assertAlmostEqual(slices[3].duration, Decimal(0.166666666667))
+        self.assertAlmostEqual(slices[4].duration, Decimal(0.166666666667))
+        self.assertAlmostEqual(slices[5].duration, Decimal(0.733333333333))
+        self.assertAlmostEqual(slices[6].duration, Decimal(0.1))
+        self.assertAlmostEqual(slices[7].duration, Decimal(0.3))
+        self.assertAlmostEqual(slices[8].duration, Decimal(1.2))
+
+        self.assertEqual(slices[0].chord_spacing_contour, [0])
+        self.assertEqual(slices[1].chord_spacing_contour, [1, 0])
+        self.assertEqual(slices[2].chord_spacing_contour, [2, 0, 1])
+        self.assertEqual(slices[3].chord_spacing_contour, [2, 0, 0, 1, 3])
+        self.assertEqual(slices[4].chord_spacing_contour, [3, 0, 1, 2])
+        self.assertEqual(slices[5].chord_spacing_contour, [1, 0])
+        self.assertEqual(slices[6].chord_spacing_contour, [2, 0, 1, 0])
+        self.assertEqual(slices[7].chord_spacing_contour, [1, 1, 2, 0])
+        self.assertEqual(slices[8].chord_spacing_contour, [2, 2, 0, 3, 1])
+
 if __name__ == "__main__":
     unittest.main()

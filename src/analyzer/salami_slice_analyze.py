@@ -59,7 +59,7 @@ def analyze(input_xml, starting_measure_num=None, ending_measure_num=None, use_l
         for item in stream:
             if type(item) == music21.stream.Part or type(item) == music21.stream.PartStaff:
                 parts.append(item)
-    print("Slices:", get_slice_num(parts))
+
     results = slice_parts(parts, get_slice_num(parts), [], [use_local], starting_measure_num, ending_measure_num, tempo_map)
     return results
 
@@ -260,6 +260,7 @@ def get_slice_num(parts):
     # Get the LCM and return it. This is the number of slices per quarter note that we need.
     for item in denominators:
         denominators_list.append(item)
+    
     # print(lcm(denominators_list))
     return lcm(denominators_list)
 
