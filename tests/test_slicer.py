@@ -1,3 +1,9 @@
+"""
+File: test_slicer.py
+
+Runs the slicer on music excerpts and verifies the results
+"""
+
 import unittest
 import os
 from pathlib import Path
@@ -6,6 +12,7 @@ import music21
 from pctheory import pcset, pcseg, pset, pseg
 import numpy as np
 from decimal import Decimal
+from fractions import Fraction
 
 def csi(pseg: list):
     """
@@ -13,8 +20,11 @@ def csi(pseg: list):
     :param pseg: The pitch seg (note: it should not have duplicate pitches in it)
     :return: The chord spacing index (CSI)
     """
-    ipseg = [p.p for p in pseg]
-    return (np.average(ipseg) - ipseg[0]) / (ipseg[-1] - ipseg[0])
+    if len(pseg) < 3:
+        return np.nan
+    else:
+        ipseg = [p.p for p in pseg]
+        return (np.average(ipseg) - ipseg[0]) / (ipseg[-1] - ipseg[0])
 
 class BasicTests(unittest.TestCase):
     def test_simple_analysis1(self):
@@ -180,6 +190,15 @@ class CarterTests(unittest.TestCase):
         self.assertEqual(slices[7].pseg, pseg.make_pseg12(0, 3, 6, 11, 13))
         self.assertEqual(slices[8].pseg, pseg.make_pseg12(0, 3, 6, 7, 11, 13))
         self.assertEqual(len(slices), 9)
+        self.assertEqual(slices[0].sc_name, "(2-2)[02]")
+        self.assertEqual(slices[1].sc_name, "(3-11)[037]")
+        self.assertEqual(slices[2].sc_name, "(4-19)[0148]")
+        self.assertEqual(slices[3].sc_name, "(6-16)[014568]")
+        self.assertEqual(slices[4].sc_name, "(5-Z17)[01348]")
+        self.assertEqual(slices[5].sc_name, "(3-3)[014]")
+        self.assertEqual(slices[6].sc_name, "(5-14)[01257]")
+        self.assertEqual(slices[7].sc_name, "(5-Z36)[01247]")
+        self.assertEqual(slices[8].sc_name, "(6-Z17)[012478]")
 
         self.assertAlmostEqual(slices[0].duration, Decimal(0.5))
         self.assertAlmostEqual(slices[1].duration, Decimal(0.625))
@@ -190,6 +209,15 @@ class CarterTests(unittest.TestCase):
         self.assertAlmostEqual(slices[6].duration, Decimal(0.1))
         self.assertAlmostEqual(slices[7].duration, Decimal(0.3))
         self.assertAlmostEqual(slices[8].duration, Decimal(1.2))
+        self.assertEqual(slices[0].quarter_duration, Fraction(1, 2))
+        self.assertEqual(slices[1].quarter_duration, Fraction(5, 8))
+        self.assertEqual(slices[2].quarter_duration, Fraction(5, 24))
+        self.assertEqual(slices[3].quarter_duration, Fraction(1, 6))
+        self.assertEqual(slices[4].quarter_duration, Fraction(1, 6))
+        self.assertEqual(slices[5].quarter_duration, Fraction(11, 15))
+        self.assertEqual(slices[6].quarter_duration, Fraction(1, 10))
+        self.assertEqual(slices[7].quarter_duration, Fraction(3, 10))
+        self.assertEqual(slices[8].quarter_duration, Fraction(6, 5))
 
         self.assertEqual(slices[0].chord_spacing_contour, [0])
         self.assertEqual(slices[1].chord_spacing_contour, [1, 0])
@@ -200,6 +228,82 @@ class CarterTests(unittest.TestCase):
         self.assertEqual(slices[6].chord_spacing_contour, [2, 0, 1, 0])
         self.assertEqual(slices[7].chord_spacing_contour, [1, 1, 2, 0])
         self.assertEqual(slices[8].chord_spacing_contour, [2, 2, 0, 3, 1])
+
+        self.assertTrue(np.isnan(slices[0].chord_spacing_index))
+        self.assertAlmostEqual(slices[1].chord_spacing_index, csi(slices[1].pseg))
+        self.assertAlmostEqual(slices[2].chord_spacing_index, csi(slices[2].pseg))
+        self.assertAlmostEqual(slices[3].chord_spacing_index, csi(slices[3].pseg))
+        self.assertAlmostEqual(slices[4].chord_spacing_index, csi(slices[4].pseg))
+        self.assertAlmostEqual(slices[5].chord_spacing_index, csi(slices[5].pseg))
+        self.assertAlmostEqual(slices[6].chord_spacing_index, csi(slices[6].pseg))
+        self.assertAlmostEqual(slices[7].chord_spacing_index, csi(slices[7].pseg))
+        self.assertAlmostEqual(slices[8].chord_spacing_index, csi(slices[8].pseg))
+
+    def test_carter2(self):
+        """
+        Tests measure 130 of Carter V
+        """
+        results = salami_slice_analyze.analyze(Path(__file__).parent / "data/test_carter2.musicxml")
+        slices = results[0].slices
+        self.assertEqual(slices[0].pseg, pseg.make_pseg12(3, 7))
+        self.assertEqual(slices[1].pseg, pseg.make_pseg12(3, 7, 13))
+        self.assertEqual(slices[2].pseg, pseg.make_pseg12(13))
+        self.assertEqual(slices[3].pseg, pseg.make_pseg12(12))
+        self.assertEqual(slices[4].pseg, [])
+        self.assertEqual(slices[5].pseg, pseg.make_pseg12(-4, 5, 14))
+        self.assertEqual(slices[6].pseg, [])
+        self.assertEqual(slices[7].pseg, pseg.make_pseg12(-5, 12, 15, 22))
+        self.assertEqual(slices[8].pseg, pseg.make_pseg12(22))
+        self.assertEqual(len(slices), 9)
+
+        self.assertEqual(slices[0].sc_name, "(2-4)[04]")
+        self.assertEqual(slices[1].sc_name, "(3-8)[026]")
+        self.assertEqual(slices[2].sc_name, "(1-1)[0]")
+        self.assertEqual(slices[3].sc_name, "(1-1)[0]")
+        self.assertEqual(slices[4].sc_name, "(0-1)[]")
+        self.assertEqual(slices[5].sc_name, "(3-10)[036]")
+        self.assertEqual(slices[6].sc_name, "(0-1)[]")
+        self.assertEqual(slices[7].sc_name, "(4-26)[0358]")
+        self.assertEqual(slices[8].sc_name, "(1-1)[0]")
+
+        self.assertEqual(slices[0].quarter_duration, Fraction(1, 3))
+        self.assertEqual(slices[1].quarter_duration, Fraction(1, 6))
+        self.assertEqual(slices[2].quarter_duration, Fraction(1, 6))
+        self.assertEqual(slices[3].quarter_duration, Fraction(1, 1))
+        self.assertEqual(slices[4].quarter_duration, Fraction(1, 3))
+        self.assertEqual(slices[5].quarter_duration, Fraction(1, 1))
+        self.assertEqual(slices[6].quarter_duration, Fraction(1, 3))
+        self.assertEqual(slices[7].quarter_duration, Fraction(1, 3))
+        self.assertEqual(slices[8].quarter_duration, Fraction(1, 3))
+        self.assertAlmostEqual(slices[0].duration, Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(slices[1].duration, Decimal((1/6) * (60/115.2)))
+        self.assertAlmostEqual(slices[2].duration, Decimal((1/6) * (60/115.2)))
+        self.assertAlmostEqual(slices[3].duration, Decimal(60/115.2))
+        self.assertAlmostEqual(slices[4].duration, Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(slices[5].duration, Decimal(60/115.2))
+        self.assertAlmostEqual(slices[6].duration, Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(slices[7].duration, Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(slices[8].duration, Decimal((1/3) * (60/115.2)))
+
+        self.assertEqual(slices[0].chord_spacing_contour, [0])
+        self.assertEqual(slices[1].chord_spacing_contour, [0, 1])
+        self.assertEqual(slices[2].chord_spacing_contour, [])
+        self.assertEqual(slices[3].chord_spacing_contour, [])
+        self.assertEqual(slices[4].chord_spacing_contour, [])
+        self.assertEqual(slices[5].chord_spacing_contour, [0, 0])
+        self.assertEqual(slices[6].chord_spacing_contour, [])
+        self.assertEqual(slices[7].chord_spacing_contour, [2, 0, 1])
+        self.assertEqual(slices[8].chord_spacing_contour, [])
+
+        self.assertTrue(np.isnan(slices[0].chord_spacing_index))
+        self.assertAlmostEqual(slices[1].chord_spacing_index, csi(slices[1].pseg))
+        self.assertTrue(np.isnan(slices[2].chord_spacing_index))
+        self.assertTrue(np.isnan(slices[3].chord_spacing_index))
+        self.assertTrue(np.isnan(slices[4].chord_spacing_index))
+        self.assertAlmostEqual(slices[5].chord_spacing_index, csi(slices[5].pseg))
+        self.assertTrue(np.isnan(slices[6].chord_spacing_index))
+        self.assertAlmostEqual(slices[7].chord_spacing_index, csi(slices[7].pseg))
+        self.assertTrue(np.isnan(slices[8].chord_spacing_index))
 
 if __name__ == "__main__":
     unittest.main()
