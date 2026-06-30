@@ -537,6 +537,7 @@ class Results:
             self._median_trajectory_max = 0
             self._median_trajectory_min = 0
             
+            # Compute overall bounds for the whole analyzed section
             i = 0
             while i < len(self._slices):
                 if self._slices[i].lower_bound is not None and self._slices[i].upper_bound is not None:
@@ -626,8 +627,10 @@ class Results:
                 if self._max_pitch_count_with_duplicates < s.pset_cardinality:
                     self._max_pitch_count_with_duplicates = s.pset_cardinality
 
-            # Calculate pitch frequency
+            # Calculate pitch/pc frequency and duration over all slices
             for i in range(0, len(self._slices)):
+                # Each voice has a pset--this allows us to account for duplicates,
+                # and get voice-specific information
                 for v in range(len(self._slices[i].psets)):
                     for p in self._slices[i].psets[v]:
                         if p.p not in self._pitch_duration_voices[v].keys():
@@ -636,6 +639,9 @@ class Results:
                             self._pitch_duration_voices[v][p.p] += self._slices[i].duration
                         if p.p not in self._pitch_frequency_voices[v].keys():
                             self._pitch_frequency_voices[v][p.p] = 1
+                        # If the pitch is simply a re-attack of a pitch in the same voice in the last slice,
+                        # it's not a new occurrence. Instead it might be sustained. Even if it's re-attacked,
+                        # we don't care--we treat it as if it's tied over.
                         elif len(self._slices[i-1].psets) == 0 or p not in self._slices[i-1].psets[v]:
                             self._pitch_frequency_voices[v][p.p] += 1
                     for pc in self._slices[i].pcsets[v]:
@@ -647,6 +653,8 @@ class Results:
                             self._pc_frequency_voices[v][pc.pc] = 1
                         elif len(self._slices[i - 1].pcsets) == 0 or pc not in self._slices[i - 1].pcsets[v]:
                             self._pc_frequency_voices[v][pc.pc] += 1
+                # For the overall pitch frequency and duration (not voice-specific), we ignore duplicates,
+                # even if they occur in different voices.
                 for p in self._slices[i].pset:
                     if p.p not in self._pitch_duration.keys():
                         self._pitch_duration[p.p] = self._slices[i].duration
