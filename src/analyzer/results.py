@@ -624,8 +624,8 @@ class Results:
                         self._uns_max = s.uns
                     if self._uns_min > s.uns:
                         self._uns_min = s.uns
-                if self._max_pitch_count_with_duplicates < s.pset_cardinality:
-                    self._max_pitch_count_with_duplicates = s.pset_cardinality
+                if self._max_pitch_count_with_duplicates < len(s.pitchseg):
+                    self._max_pitch_count_with_duplicates = len(s.pitchseg)
 
             # Calculate pitch/pc frequency and duration over all slices
             for i in range(0, len(self._slices)):
