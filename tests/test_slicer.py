@@ -515,6 +515,93 @@ class CarterTests(unittest.TestCase):
         self.assertEqual(results.lower_bound, 0)
         self.assertEqual(results.upper_bound, 16)
         self.assertEqual(results.start_time, 0)
+        self.assertEqual(len(results.pc_duration), 9)
+        self.assertAlmostEqual(results.pc_duration[0], Decimal(2.5))
+        self.assertAlmostEqual(results.pc_duration[1], Decimal(8/5))
+        self.assertAlmostEqual(results.pc_duration[3], Decimal(2.5))
+        self.assertAlmostEqual(results.pc_duration[4], Decimal(1/3))
+        self.assertAlmostEqual(results.pc_duration[6], Decimal(8/5+0.5))
+        self.assertAlmostEqual(results.pc_duration[7], Decimal(6/5+0.375))
+        self.assertAlmostEqual(results.pc_duration[8], Decimal(2.5))
+        self.assertAlmostEqual(results.pc_duration[9], Decimal(1/3))
+        self.assertAlmostEqual(results.pc_duration[11], Decimal(3.5))
+        self.assertEqual(len(results.pitch_duration), 9)
+        self.assertAlmostEqual(results.pitch_duration[0], Decimal(2.5))
+        self.assertAlmostEqual(results.pitch_duration[3], Decimal(2.5))
+        self.assertAlmostEqual(results.pitch_duration[6], Decimal(8/5+0.5))
+        self.assertAlmostEqual(results.pitch_duration[7], Decimal(6/5+0.375))
+        self.assertAlmostEqual(results.pitch_duration[8], Decimal(2.5))
+        self.assertAlmostEqual(results.pitch_duration[9], Decimal(1/3))
+        self.assertAlmostEqual(results.pitch_duration[11], Decimal(3.5))
+        self.assertAlmostEqual(results.pitch_duration[13], Decimal(8/5))
+        self.assertAlmostEqual(results.pitch_duration[16], Decimal(1/3))
+        self.assertEqual(results.pc_frequency, {
+            0: 1, 1: 1, 3: 2, 4: 1, 6: 2, 7: 2, 8: 1, 9: 1, 11: 1
+        })
+        self.assertEqual(results.pitch_frequency, {
+            0: 1, 3: 2, 6: 2, 7: 2, 8: 1, 9: 1, 11: 1, 13: 1, 16: 1
+        })
+        self.assertEqual(results.pcsc_frequency, {
+            "(2-2)[02]": 1,
+            "(3-11)[037]": 1,
+            "(4-19)[0148]": 1,
+            "(6-16)[014568]": 1,
+            "(5-Z17)[01348]": 1,
+            "(3-3)[014]": 1,
+            "(5-14)[01257]": 1,
+            "(5-Z36)[01247]": 1,
+            "(6-Z17)[012478]": 1
+        })
+        self.assertEqual(len(results.pcsc_duration), 9)
+        self.assertAlmostEqual(results.pcsc_duration["(2-2)[02]"], Decimal(0.5))
+        self.assertAlmostEqual(results.pcsc_duration["(3-11)[037]"], Decimal(0.625))
+        self.assertAlmostEqual(results.pcsc_duration["(4-19)[0148]"], Decimal(1/3-0.125))
+        self.assertAlmostEqual(results.pcsc_duration["(6-16)[014568]"], Decimal(1/6))
+        self.assertAlmostEqual(results.pcsc_duration["(5-Z17)[01348]"], Decimal(1/6))
+        self.assertAlmostEqual(results.pcsc_duration["(3-3)[014]"], Decimal(1/3+0.4))
+        self.assertAlmostEqual(results.pcsc_duration["(5-14)[01257]"], Decimal(0.1))
+        self.assertAlmostEqual(results.pcsc_duration["(5-Z36)[01247]"], Decimal(0.3))
+        self.assertAlmostEqual(results.pcsc_duration["(6-Z17)[012478]"], Decimal(6/5))
+        self.assertEqual(results.psc_frequency, {
+            "[2]": 1,
+            "[5, 3]": 1,
+            "[4, 1, 3]": 1,
+            "[4, 1, 1, 2, 5]": 1,
+            "[8, 1, 2, 5]": 1,
+            "[8, 3]": 1,
+            "[6, 2, 3, 2]": 1,
+            "[3, 3, 5, 2]": 1,
+            "[3, 3, 1, 4, 2]": 1
+        })
+        self.assertEqual(len(results.psc_duration), 9)
+        self.assertAlmostEqual(results.psc_duration["[2]"], Decimal(0.5))
+        self.assertAlmostEqual(results.psc_duration["[5, 3]"], Decimal(0.625))
+        self.assertAlmostEqual(results.psc_duration["[4, 1, 3]"], Decimal(1/3-0.125))
+        self.assertAlmostEqual(results.psc_duration["[4, 1, 1, 2, 5]"], Decimal(1/6))
+        self.assertAlmostEqual(results.psc_duration["[8, 1, 2, 5]"], Decimal(1/6))
+        self.assertAlmostEqual(results.psc_duration["[8, 3]"], Decimal(1/3+0.4))
+        self.assertAlmostEqual(results.psc_duration["[6, 2, 3, 2]"], Decimal(0.1))
+        self.assertAlmostEqual(results.psc_duration["[3, 3, 5, 2]"], Decimal(0.3))
+        self.assertAlmostEqual(results.psc_duration["[3, 3, 1, 4, 2]"], Decimal(6/5))
+        self.assertEqual(results.chord_spacing_contour_frequency, {
+            "<0>": 1,
+            "<1, 0>": 2,
+            "<2, 0, 1>": 1,
+            "<2, 0, 0, 1, 3>": 1,
+            "<3, 0, 1, 2>": 1,
+            "<2, 0, 1, 0>": 1,
+            "<1, 1, 2, 0>": 1,
+            "<2, 2, 0, 3, 1>": 1
+        })
+        self.assertEqual(len(results.chord_spacing_contour_duration), 8)
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<0>"], Decimal(0.5))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<1, 0>"], Decimal(1.025+1/3))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<2, 0, 1>"], Decimal(1/3-0.125))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<2, 0, 0, 1, 3>"], Decimal(1/6))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<3, 0, 1, 2>"], Decimal(1/6))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<2, 0, 1, 0>"], Decimal(0.1))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<1, 1, 2, 0>"], Decimal(0.3))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<2, 2, 0, 3, 1>"], Decimal(6/5))
 
     def test_carter2(self):
         """
@@ -654,6 +741,74 @@ class CarterTests(unittest.TestCase):
         self.assertEqual(results.lower_bound, -5)
         self.assertEqual(results.upper_bound, 22)
         self.assertEqual(results.start_time, 0)
+        self.assertEqual(len(results.pc_duration), 8)
+        self.assertAlmostEqual(results.pc_duration[0], Decimal((4/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pc_duration[1], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pc_duration[2], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pc_duration[3], Decimal((5/6) * (60/115.2)))
+        self.assertAlmostEqual(results.pc_duration[5], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pc_duration[7], Decimal((5/6) * (60/115.2)))
+        self.assertAlmostEqual(results.pc_duration[8], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pc_duration[10], Decimal((2/3) * (60/115.2)))
+        self.assertEqual(len(results.pitch_duration), 10)
+        self.assertAlmostEqual(results.pitch_duration[-5], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[-4], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pitch_duration[3], Decimal(0.5 * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[5], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pitch_duration[7], Decimal(0.5 * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[12], Decimal((4/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[13], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[14], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pitch_duration[15], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pitch_duration[22], Decimal((2/3) * (60/115.2)))
+        self.assertEqual(results.pc_frequency, {
+            0: 2, 1: 1, 2: 1, 3: 2, 5: 1, 7: 2, 8: 1, 10: 1
+        })
+        self.assertEqual(results.pitch_frequency, {
+            -5: 1, -4: 1, 3: 1, 5: 1, 7: 1, 12: 2, 13: 1, 14: 1, 15: 1, 22: 1
+        })
+        self.assertEqual(results.pcsc_frequency, {
+            "(2-4)[04]": 1,
+            "(3-8)[026]": 1,
+            "(1-1)[0]": 3,
+            "(0-1)[]": 2,
+            "(3-10)[036]": 1,
+            "(4-26)[0358]": 1
+        })
+        self.assertEqual(len(results.pcsc_duration), 6)
+        self.assertAlmostEqual(results.pcsc_duration["(2-4)[04]"], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pcsc_duration["(3-8)[026]"], Decimal((1/6) * (60/115.2)))
+        self.assertAlmostEqual(results.pcsc_duration["(1-1)[0]"], Decimal(1.5 * (60/115.2)))
+        self.assertAlmostEqual(results.pcsc_duration["(0-1)[]"], Decimal((2/3) * (60/115.2)))
+        self.assertAlmostEqual(results.pcsc_duration["(3-10)[036]"], Decimal(60/115.2))
+        self.assertAlmostEqual(results.pcsc_duration["(4-26)[0358]"], Decimal((1/3) * (60/115.2)))
+        self.assertEqual(results.psc_frequency, {
+            "[4]": 1,
+            "[4, 6]": 1,
+            "[]": 5,
+            "[9, 9]": 1,
+            "[17, 3, 7]": 1
+        })
+        self.assertEqual(len(results.psc_duration), 5)
+        self.assertAlmostEqual(results.psc_duration["[4]"], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.psc_duration["[4, 6]"], Decimal((1/6) * (60/115.2)))
+        self.assertAlmostEqual(results.psc_duration["[]"], Decimal((13/6) * (60/115.2)))
+        self.assertAlmostEqual(results.psc_duration["[9, 9]"], Decimal(60/115.2))
+        self.assertAlmostEqual(results.psc_duration["[17, 3, 7]"], Decimal((1/3) * (60/115.2)))
+        self.assertEqual(results.chord_spacing_contour_frequency, {
+            "<0>": 1,
+            "<0, 1>": 1,
+            "<>": 5,
+            "<0, 0>": 1,
+            "<2, 0, 1>": 1
+        })
+        self.assertEqual(len(results.chord_spacing_contour_duration), 5)
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<0>"], Decimal((1/3) * (60/115.2)))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<0, 1>"], Decimal((1/6) * (60/115.2)))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<>"], Decimal((13/6) * (60/115.2)))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<0, 0>"], Decimal(60/115.2))
+        self.assertAlmostEqual(results.chord_spacing_contour_duration["<2, 0, 1>"], Decimal((1/3) * (60/115.2)))
+        
 
 if __name__ == "__main__":
     unittest.main()
