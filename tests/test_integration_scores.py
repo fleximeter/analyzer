@@ -363,6 +363,37 @@ class BasicTests(unittest.TestCase):
             self.assertAlmostEqual(analysis.chord_spacing_contour_duration["<1, 0>"], Decimal(0.5))
             self.assertAlmostEqual(analysis.chord_spacing_contour_duration["<0, 2, 1>"], Decimal(2))
 
+    def test_simple_analysis3(self):
+        """
+        Tests a score with a key signature and aslice across a tempo boundary
+        """
+        results = salami_slice_analyze.analyze(Path(__file__).parent / "data/test5.musicxml")[0]
+        slices = results.slices
+        self.assertEqual(len(slices), 10)
+
+        self.assertEqual(slices[0].pseg, pseg.make_pseg12(-11, 4, 8, 13))
+        self.assertEqual(slices[0].pset, pset.make_pset12(-11, 4, 8, 13))
+        self.assertEqual(slices[0].psets, [pset.make_pset12(8, 13), pset.make_pset12(-11, 4)])
+        self.assertEqual(slices[0].pcset, pcset.make_pcset12(1, 4, 8))
+        self.assertEqual(slices[0].pcseg, pcseg.make_pcseg12(1, 4, 8, 1))
+        self.assertEqual(slices[0].pitchseg, [-11, 4, 8, 13])
+        self.assertEqual(slices[0].sc_name, "(3-11)[037]")
+        # psc [15, 4, 5]
+        self.assertEqual(slices[0].chord_spacing_contour, [2, 0, 1])
+        self.assertAlmostEqual(slices[0].chord_spacing_index, csi(slices[0].pseg))
+
+        self.assertEqual(slices[1].pseg, pseg.make_pseg12(-10, 2, 6, 11))
+        self.assertEqual(slices[1].pset, pset.make_pset12(-10, 2, 6, 11))
+        self.assertEqual(slices[1].psets, [pset.make_pset12(6, 11), pset.make_pset12(-10, 2)])
+        self.assertEqual(slices[1].pcset, pcset.make_pcset12(2, 6, 11))
+        self.assertEqual(slices[1].pcseg, pcseg.make_pcseg12(2, 2, 6, 11))
+        self.assertEqual(slices[1].pitchseg, [-10, 2, 6, 11])
+        self.assertEqual(slices[1].sc_name, "(3-11)[037]")
+        # psc [12, 4, 5]
+        self.assertEqual(slices[1].chord_spacing_contour, [2, 0, 1])
+        self.assertAlmostEqual(slices[1].chord_spacing_index, csi(slices[1].pseg))
+
+
 class CarterTests(unittest.TestCase):
     def test_carter1(self):
         """
